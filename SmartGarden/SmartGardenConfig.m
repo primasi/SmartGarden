@@ -1,0 +1,199 @@
+//
+//  SmartGardenConfig.m
+//  SmartGarden
+//
+//  Created by Primas, Ingo on 29.11.17.
+//  Copyright © 2017 Bausparkasse Mainz AG. All rights reserved.
+//
+
+#import <objc/runtime.h>
+
+#import "SmartGardenConfig.h"
+#import "NSArray_Sorting.h"
+
+#define toBoolString(aBool) ([aBool boolValue] ? @"true" : @"false")
+
+@implementation SmartGardenConfig
+
+- (void) initWithJSON:(NSDictionary *) json
+{
+    for (NSString *key in [json allKeys])
+    {
+        if ([key isEqualToString:@"switches"])
+        {
+            self.switches = [[NSMutableDictionary alloc] init];
+            NSArray *jsonArray = [json valueForKey:key];
+            for (NSDictionary *subjson in jsonArray)
+            {
+                SwitchConfig *switchConfig = [[SwitchConfig alloc] initWithJSON:subjson];
+                [self.switches setObject:switchConfig forKey:switchConfig.nummer];
+            }
+        }
+        else if ([key isEqualToString:@"startzeiten"])
+        {
+            self.startzeiten = [[NSMutableArray alloc] init];
+            NSArray *jsonArray = [json valueForKey:key];
+            for (NSDictionary *subjson in jsonArray)
+            {
+                Startzeit *startzeit = [[Startzeit alloc] initWithJSON:subjson];
+                [self.startzeiten addObject:startzeit];
+            }
+        }
+        else if ([key isEqualToString:@"devices"])
+        {
+            self.devices = [[NSMutableArray alloc] init];
+            NSArray *jsonArray = [json valueForKey:key];
+            for (NSString *subjson in jsonArray)
+            {
+                [self.devices addObject:subjson];
+            }
+        }
+        else
+        {
+            [self setValue:[json valueForKey:key] forKey:key];
+        }
+    }
+}
+
+- (NSString *)classToJson
+{
+    NSString *subAttributesSwitches = @"[";
+    for (SwitchConfig *switchConfig in [[self.switches allValues] sortAscending:@"nummer"])
+    {
+        if (![subAttributesSwitches isEqualToString:@"["])
+        {
+            subAttributesSwitches = [subAttributesSwitches stringByAppendingString:@","];
+        }
+        subAttributesSwitches = [subAttributesSwitches stringByAppendingString:[switchConfig classToJson]];
+    }
+    subAttributesSwitches = [subAttributesSwitches stringByAppendingString:@"]"];
+    
+    NSString *subAttributesStartzeiten = @"[";
+    for (Startzeit *startzeit in self.startzeiten)
+    {
+        if (![subAttributesStartzeiten isEqualToString:@"["])
+        {
+            subAttributesStartzeiten = [subAttributesStartzeiten stringByAppendingString:@","];
+        }
+        subAttributesStartzeiten = [subAttributesStartzeiten stringByAppendingString:[startzeit classToJson]];
+    }
+    subAttributesStartzeiten = [subAttributesStartzeiten stringByAppendingString:@"]"];
+    
+    NSString *subAttributesDevices = @"[";
+    for (NSString *device in self.devices)
+    {
+        if (![subAttributesDevices isEqualToString:@"["])
+        {
+            subAttributesDevices = [subAttributesDevices stringByAppendingString:@","];
+        }
+        subAttributesDevices = [subAttributesDevices stringByAppendingString:device];
+    }
+    subAttributesDevices = [subAttributesDevices stringByAppendingString:@"]"];
+    
+    NSString *attributes = [NSString stringWithFormat:@"{automatikAktiviert:%@,badge:%@,pushnotificationId:%@,serverzeit:%@,switches:%@,startzeiten:%@,devices:%@}",                          toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,nil,subAttributesSwitches,subAttributesStartzeiten,subAttributesDevices];
+
+    return attributes;
+}
+/*
+- (NSDictionary *) dictionaryWithPropertiesOfObject:(id)obj
+{
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    
+    unsigned count;
+    objc_property_t *properties = class_copyPropertyList([obj class], &count);
+    
+    for (int i = 0; i < count; i++) {
+        NSString *key = [NSString stringWithUTF8String:property_getName(properties[i])];
+        [dict setObject:[obj valueForKey:key] forKey:key];
+    }
+    
+    free(properties);
+    
+    return [NSDictionary dictionaryWithDictionary:dict];
+}
+*/
+- (void)updateGesamtlaufzeit
+{
+    int laufzeit = 0;
+    for (SwitchConfig *switchConfig in [self switchesForSection:0])
+    {
+        if ([switchConfig.modus isEqualToString:@"Einzel"])
+        {
+            laufzeit += ([switchConfig.gesamtlaufzeit intValue] + 1);
+        }
+    }
+    for (SwitchConfig *switchConfig in [self switchesForSection:0])
+    {
+        if ([switchConfig.modus isEqualToString:@"Gesamt"])
+        {
+            switchConfig.gesamtlaufzeit = [NSNumber numberWithInt:laufzeit];
+        }
+    }
+}
+
+- (NSMutableArray *)switchesForSection:(int)section
+{
+    NSMutableArray *switchesForSection = [[NSMutableArray alloc] init];
+    for (SwitchConfig *switchConfig in [self.switches allValues])
+    {
+        if ([switchConfig.section intValue] == section)
+        {
+            [switchesForSection addObject:switchConfig];
+        }
+    }
+    return switchesForSection;
+}
+
+- (SwitchConfig *)switchForIndexPath:(NSIndexPath *)indexPath
+{
+    SwitchConfig *switchForIndexPath = nil;
+    
+    int switchConfigCount = 0;
+    for (SwitchConfig *switchConfig in [[self.switches allValues] sortAscending:@"nummer"])
+    {
+        if ([switchConfig.section isEqualToNumber:[NSNumber numberWithInteger:indexPath.section]])
+        {
+            if (switchConfigCount == indexPath.row)
+            {
+                switchForIndexPath = switchConfig;
+                break;
+            }
+            else
+            {
+                switchConfigCount++;
+            }
+        }
+    }
+    return switchForIndexPath;
+}
+
+- (SwitchConfig *)nextActiveSwitchConfig:(SwitchConfig *)activeSwitchConfig
+{
+    SwitchConfig *switchForSwitchConfig = nil;
+    
+    for (SwitchConfig *switchConfig in [[self.switches allValues] sortAscending:@"nummer"])
+    {
+        if (activeSwitchConfig == nil)
+        {
+            if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Einzel"])
+            {
+                switchForSwitchConfig = switchConfig;
+                break;
+            }
+        }
+        else
+        {
+            if (switchConfig.nummer > activeSwitchConfig.nummer)
+            {
+                if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Einzel"])
+                {
+                    switchForSwitchConfig = switchConfig;
+                    break;
+                }
+            }
+        }
+    }
+    return switchForSwitchConfig;
+}
+
+@end
