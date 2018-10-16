@@ -17,6 +17,7 @@
 @property (nonatomic, strong) UIPickerView *modusPicker;
 @property (nonatomic, strong) UIPickerView *schalterartPicker;
 @property (nonatomic, strong) UIPickerView *currentPicker;
+@property (weak, nonatomic) IBOutlet UINavigationItem *switchSetupNavItem;
 
 @end
 
@@ -31,10 +32,7 @@
     self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60];
     
     self.modusTextView.text = self.switchConfig.modus;
-    if ([self.switchConfig.modus isEqualToString:@"Gesamt"])
-    {
-        [self.laufzeitTextView setUserInteractionEnabled:NO];
-    }
+    [self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Gesamt"]];
     
     [self initModusPicker];
     [self initLaufzeitPicker];
