@@ -16,9 +16,9 @@
 #import "StartzeitenViewController.h"
 #import "SwitchSetupController.h"
 
-//#define BASE_URL @"172.20.10.14"
+#define BASE_URL @"172.20.10.14"
 //#define BASE_URL @"192.168.2.17"
-#define BASE_URL @"192.168.0.30"
+//#define BASE_URL @"192.168.0.30"
 
 @interface ViewController () <UITableViewDataSource, UITableViewDelegate, SwitcherTableCellDelegate>
 

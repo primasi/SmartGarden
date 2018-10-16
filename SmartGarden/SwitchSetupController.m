@@ -12,6 +12,7 @@
 
 @property (weak, nonatomic) IBOutlet UITextView *laufzeitTextView;
 @property (weak, nonatomic) IBOutlet UITextView *modusTextView;
+@property (weak, nonatomic) IBOutlet UITextView *schalterartTextView;
 @property (strong, nonatomic) NSMutableDictionary *pickerData;
 @property (nonatomic, strong) UIPickerView *laufzeitPicker;
 @property (nonatomic, strong) UIPickerView *modusPicker;
@@ -27,6 +28,8 @@
 {
     [super viewDidLoad];
     
+    self.switchSetupNavItem.title = [NSString stringWithFormat:@"Schalter %d",[self.switchConfig.nummer intValue]];
+    
     self.pickerData = [[NSMutableDictionary alloc] init];
     
     self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60];
@@ -34,8 +37,18 @@
     self.modusTextView.text = self.switchConfig.modus;
     [self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Gesamt"]];
     
+    if ([self.switchConfig.url isEqualToString:@"(null)"])
+    {
+        self.schalterartTextView.text = @"Intern";
+    }
+    else
+    {
+        self.schalterartTextView.text = @"Extern";
+    }
+    
     [self initModusPicker];
     [self initLaufzeitPicker];
+    [self initSchalterartPicker];
 }
 
 - (void) initLaufzeitPicker
@@ -113,16 +126,54 @@
     [self.modusTextView setInputAccessoryView:modusPickerToolbar];
 }
 
+- (void) initSchalterartPicker
+{
+    NSMutableArray *pickerComponents = [[NSMutableArray alloc] init];
+    NSMutableArray *pickerSchalterart = [[NSMutableArray alloc] init];
+    [pickerSchalterart addObject:@"Intern"];
+    [pickerSchalterart addObject:@"Extern"];
+    [pickerComponents insertObject:pickerSchalterart atIndex:0];
+    
+    self.schalterartPicker = [[UIPickerView alloc] init];
+    self.schalterartPicker.delegate = self;
+    self.schalterartPicker.dataSource = self;
+    self.schalterartPicker.tag = 2;
+    [self.schalterartTextView setInputView:self.schalterartPicker];
+    [self.pickerData setObject:pickerComponents forKey:[NSNumber numberWithInteger:2]];
+    
+    if ([self.switchConfig.url isEqualToString:@"(null)"])
+    {
+        [self.schalterartPicker selectRow:0 inComponent:0 animated:YES];
+    }
+    else
+    {
+        [self.schalterartPicker selectRow:1 inComponent:0 animated:YES];
+    }
+   
+    UIToolbar *schalterartPickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+    [schalterartPickerToolbar setTintColor:[UIColor grayColor]];
+    UIBarButtonItem *doneBtn = [[UIBarButtonItem alloc]initWithTitle:@"Fertig" style:UIBarButtonItemStylePlain target:self action:@selector(handleDoneButton:)];
+    UIBarButtonItem *title = [[UIBarButtonItem alloc]initWithTitle:@"Modus" style:UIBarButtonItemStylePlain target:nil action:nil];
+    UIBarButtonItem *cancelBtn = [[UIBarButtonItem alloc]initWithTitle:@"Abbrechen" style:UIBarButtonItemStylePlain target:self action:@selector(handleCancelButton:)];
+    UIBarButtonItem *space = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    [schalterartPickerToolbar setItems:[NSArray arrayWithObjects:title, space, cancelBtn, doneBtn, nil]];
+    [self.schalterartTextView setInputAccessoryView:schalterartPickerToolbar];
+}
+
 #pragma mark - Table view data source
 
 #pragma mark - Navigation
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return [self.switchConfig.url isEqualToString:@"(null)"] ? 3 : 4;
+}
 
 - (void) handleDoneButton:(id)sender
 {
     if (self.currentPicker.tag == 0)
     {
         NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:0]][0];
-        //NSLog(@"%@",pickerComponent[[self.laufzeitPicker selectedRowInComponent:0]]);
         self.switchConfig.gesamtlaufzeit = [NSNumber numberWithInteger:[pickerComponent[[self.laufzeitPicker selectedRowInComponent:0]] intValue] * 60 + [pickerComponent[[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
         self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [pickerComponent[[self.laufzeitPicker selectedRowInComponent:0]] intValue],[pickerComponent[[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
         [self.laufzeitTextView resignFirstResponder];
@@ -133,6 +184,14 @@
         self.switchConfig.modus = pickerComponent[[self.modusPicker selectedRowInComponent:0]];
         self.modusTextView.text = pickerComponent[[self.modusPicker selectedRowInComponent:0]];
         [self.modusTextView resignFirstResponder];
+    }
+    if (self.currentPicker.tag == 2)
+    {
+        NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:2]][0];
+        self.switchConfig.url = pickerComponent[[self.schalterartPicker selectedRowInComponent:0]];
+        self.schalterartTextView.text = pickerComponent[[self.schalterartPicker selectedRowInComponent:0]];
+        [self.schalterartTextView resignFirstResponder];
+        [self.tableView reloadData];
     }
 }
 
@@ -145,6 +204,10 @@
     if (self.currentPicker.tag == 1)
     {
         [self.modusTextView resignFirstResponder];
+    }
+    if (self.currentPicker.tag == 2)
+    {
+        [self.schalterartTextView resignFirstResponder];
     }
 }
 
