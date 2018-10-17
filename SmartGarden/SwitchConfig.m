@@ -11,6 +11,7 @@
 #import "SwitchConfig.h"
 
 #define toBoolString(aBool) ([aBool boolValue] ? @"true" : @"false")
+#define valueOrNil(aValue) ([aValue isKindOfClass:[NSString class]] ? ([aValue isEqualToString:@"(null)"] ? nil : aValue) : aValue)
 
 @implementation SwitchConfig
 
@@ -23,26 +24,9 @@
 {
     for (NSString *subkey in json)
     {
-        [self setValue:[json valueForKey:subkey] forKey:subkey];
+        [self setValue:valueOrNil([json valueForKey:subkey]) forKey:subkey];
     }
     return self;
 }
-/*
-- (NSDictionary *) dictionaryWithPropertiesOfObject:(id)obj
-{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    
-    unsigned count;
-    objc_property_t *properties = class_copyPropertyList([obj class], &count);
-    
-    for (int i = 0; i < count; i++) {
-        NSString *key = [NSString stringWithUTF8String:property_getName(properties[i])];
-        [dict setObject:[obj valueForKey:key] forKey:key];
-    }
-    
-    free(properties);
-    
-    return [NSDictionary dictionaryWithDictionary:dict];
-}
-*/
+
 @end

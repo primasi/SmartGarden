@@ -50,6 +50,7 @@
         }
         else
         {
+            //[self setValue:[[json valueForKey:key] isEqualToString:@"(null)"] ? nil : [json valueForKey:key] forKey:key];
             [self setValue:[json valueForKey:key] forKey:key];
         }
     }
@@ -94,24 +95,7 @@
 
     return attributes;
 }
-/*
-- (NSDictionary *) dictionaryWithPropertiesOfObject:(id)obj
-{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    
-    unsigned count;
-    objc_property_t *properties = class_copyPropertyList([obj class], &count);
-    
-    for (int i = 0; i < count; i++) {
-        NSString *key = [NSString stringWithUTF8String:property_getName(properties[i])];
-        [dict setObject:[obj valueForKey:key] forKey:key];
-    }
-    
-    free(properties);
-    
-    return [NSDictionary dictionaryWithDictionary:dict];
-}
-*/
+
 - (void)updateGesamtlaufzeit
 {
     int laufzeit = 0;

@@ -341,6 +341,7 @@
                         {
                             NSError *jsonError;
                             
+                            //receiveString = [receiveString stringByReplacingOccurrencesOfString:@"(null)" withString:@"null"];
                             NSDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:[[receiveString substringFromIndex:[@"Status" length] + 1] dataUsingEncoding:NSASCIIStringEncoding] options:NSJSONReadingMutableContainers error:&jsonError];
                             if (jsonError == nil)
                             {

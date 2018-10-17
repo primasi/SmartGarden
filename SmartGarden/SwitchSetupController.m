@@ -13,6 +13,7 @@
 @property (weak, nonatomic) IBOutlet UITextView *laufzeitTextView;
 @property (weak, nonatomic) IBOutlet UITextView *modusTextView;
 @property (weak, nonatomic) IBOutlet UITextView *schalterartTextView;
+@property (weak, nonatomic) IBOutlet UITextView *urlTextView;
 @property (strong, nonatomic) NSMutableDictionary *pickerData;
 @property (nonatomic, strong) UIPickerView *laufzeitPicker;
 @property (nonatomic, strong) UIPickerView *modusPicker;
@@ -37,7 +38,7 @@
     self.modusTextView.text = self.switchConfig.modus;
     [self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Gesamt"]];
     
-    if ([self.switchConfig.url isEqualToString:@"(null)"])
+    if (self.switchConfig.url == nil)
     {
         self.schalterartTextView.text = @"Intern";
     }
@@ -141,7 +142,7 @@
     [self.schalterartTextView setInputView:self.schalterartPicker];
     [self.pickerData setObject:pickerComponents forKey:[NSNumber numberWithInteger:2]];
     
-    if ([self.switchConfig.url isEqualToString:@"(null)"])
+    if (self.switchConfig.url == nil)
     {
         [self.schalterartPicker selectRow:0 inComponent:0 animated:YES];
     }
@@ -166,7 +167,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return [self.switchConfig.url isEqualToString:@"(null)"] ? 3 : 4;
+    return self.switchConfig.url == nil ? 3 : 4;
 }
 
 - (void) handleDoneButton:(id)sender
@@ -188,7 +189,7 @@
     if (self.currentPicker.tag == 2)
     {
         NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:2]][0];
-        self.switchConfig.url = pickerComponent[[self.schalterartPicker selectedRowInComponent:0]];
+        self.switchConfig.url = [self.schalterartPicker selectedRowInComponent:0] == 0 ? nil : self.urlTextView.text;
         self.schalterartTextView.text = pickerComponent[[self.schalterartPicker selectedRowInComponent:0]];
         [self.schalterartTextView resignFirstResponder];
         [self.tableView reloadData];
@@ -230,8 +231,6 @@
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row
             forComponent:(NSInteger)component
 {
-    //NSLog(@"%ld",pickerView.tag);
-    //NSMutableArray *pickerComponents = [self.pickerData objectForKey:[NSNumber numberWithInteger:pickerView.tag]];
     return [self.pickerData objectForKey:[NSNumber numberWithInteger:pickerView.tag]][component][row];
 }
 
