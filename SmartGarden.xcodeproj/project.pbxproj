@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D1949B42178ADAD0035E1DB /* ManualSwitchSetupController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D1949B32178ADAD0035E1DB /* ManualSwitchSetupController.m */; };
 		2D341B141FCEDFB8003B870D /* SmartGardenConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D341B131FCEDFB8003B870D /* SmartGardenConfig.m */; };
 		2D341B181FCEE833003B870D /* SwitchConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D341B171FCEE833003B870D /* SwitchConfig.m */; };
 		2D38A10720A1DE2C001418C5 /* NachrichtenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D38A10620A1DE2C001418C5 /* NachrichtenViewController.m */; };
@@ -27,7 +28,7 @@
 		2DDAF5282153874000F7FA72 /* Mittwoch.png in Resources */ = {isa = PBXBuildFile; fileRef = 2DDAF5212153874000F7FA72 /* Mittwoch.png */; };
 		2DDAF5292153874000F7FA72 /* Samstag.png in Resources */ = {isa = PBXBuildFile; fileRef = 2DDAF5222153874000F7FA72 /* Samstag.png */; };
 		2DDAF52A2153874000F7FA72 /* Sonntag.png in Resources */ = {isa = PBXBuildFile; fileRef = 2DDAF5232153874000F7FA72 /* Sonntag.png */; };
-		2DF69C52215CBF98009A0CC8 /* SwitchSetupController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DF69C51215CBF98009A0CC8 /* SwitchSetupController.m */; };
+		2DF69C52215CBF98009A0CC8 /* AutomaticSwitchSetupController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DF69C51215CBF98009A0CC8 /* AutomaticSwitchSetupController.m */; };
 		B64CB40B203507A300D208B7 /* MBCircularProgressBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = B64CB408203507A300D208B7 /* MBCircularProgressBarView.m */; };
 		B64CB40C203507A300D208B7 /* MBCircularProgressBarLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = B64CB409203507A300D208B7 /* MBCircularProgressBarLayer.m */; };
 		B69EF55F2038CB0A007DC863 /* RNBlurModalView.m in Sources */ = {isa = PBXBuildFile; fileRef = B69EF55E2038CB0A007DC863 /* RNBlurModalView.m */; };
@@ -36,6 +37,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2D1949B22178ADAD0035E1DB /* ManualSwitchSetupController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ManualSwitchSetupController.h; sourceTree = "<group>"; };
+		2D1949B32178ADAD0035E1DB /* ManualSwitchSetupController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ManualSwitchSetupController.m; sourceTree = "<group>"; };
 		2D341B131FCEDFB8003B870D /* SmartGardenConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SmartGardenConfig.m; sourceTree = "<group>"; };
 		2D341B151FCEDFE8003B870D /* SmartGardenConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SmartGardenConfig.h; sourceTree = "<group>"; };
 		2D341B161FCEE81E003B870D /* SwitchConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwitchConfig.h; sourceTree = "<group>"; };
@@ -67,8 +70,8 @@
 		2DDAF5212153874000F7FA72 /* Mittwoch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Mittwoch.png; sourceTree = "<group>"; };
 		2DDAF5222153874000F7FA72 /* Samstag.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Samstag.png; sourceTree = "<group>"; };
 		2DDAF5232153874000F7FA72 /* Sonntag.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Sonntag.png; sourceTree = "<group>"; };
-		2DF69C50215CBF98009A0CC8 /* SwitchSetupController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwitchSetupController.h; sourceTree = "<group>"; };
-		2DF69C51215CBF98009A0CC8 /* SwitchSetupController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwitchSetupController.m; sourceTree = "<group>"; };
+		2DF69C50215CBF98009A0CC8 /* AutomaticSwitchSetupController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutomaticSwitchSetupController.h; sourceTree = "<group>"; };
+		2DF69C51215CBF98009A0CC8 /* AutomaticSwitchSetupController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutomaticSwitchSetupController.m; sourceTree = "<group>"; };
 		B64CB407203507A300D208B7 /* MBCircularProgressBarLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBCircularProgressBarLayer.h; sourceTree = "<group>"; };
 		B64CB408203507A300D208B7 /* MBCircularProgressBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBCircularProgressBarView.m; sourceTree = "<group>"; };
 		B64CB409203507A300D208B7 /* MBCircularProgressBarLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBCircularProgressBarLayer.m; sourceTree = "<group>"; };
@@ -197,8 +200,10 @@
 		2DF69C4F215CBF4E009A0CC8 /* Switch Setup */ = {
 			isa = PBXGroup;
 			children = (
-				2DF69C50215CBF98009A0CC8 /* SwitchSetupController.h */,
-				2DF69C51215CBF98009A0CC8 /* SwitchSetupController.m */,
+				2DF69C50215CBF98009A0CC8 /* AutomaticSwitchSetupController.h */,
+				2DF69C51215CBF98009A0CC8 /* AutomaticSwitchSetupController.m */,
+				2D1949B22178ADAD0035E1DB /* ManualSwitchSetupController.h */,
+				2D1949B32178ADAD0035E1DB /* ManualSwitchSetupController.m */,
 			);
 			name = "Switch Setup";
 			sourceTree = "<group>";
@@ -308,13 +313,14 @@
 				2D72BC821F2B4A9E00F381EE /* main.m in Sources */,
 				2D38A10720A1DE2C001418C5 /* NachrichtenViewController.m in Sources */,
 				B6ED3DF520390EED0021246A /* SwitcherTableCell.m in Sources */,
-				2DF69C52215CBF98009A0CC8 /* SwitchSetupController.m in Sources */,
+				2DF69C52215CBF98009A0CC8 /* AutomaticSwitchSetupController.m in Sources */,
 				2D4DADDD1FD1744600B6E206 /* NSArray_Sorting.m in Sources */,
 				2D434ABB20EF4EA900BA5F6A /* StartzeitenViewController.m in Sources */,
 				2D341B141FCEDFB8003B870D /* SmartGardenConfig.m in Sources */,
 				B64CB40C203507A300D208B7 /* MBCircularProgressBarLayer.m in Sources */,
 				2D341B181FCEE833003B870D /* SwitchConfig.m in Sources */,
 				B69EF55F2038CB0A007DC863 /* RNBlurModalView.m in Sources */,
+				2D1949B42178ADAD0035E1DB /* ManualSwitchSetupController.m in Sources */,
 				B6B473C320475ECB002CE5CD /* Reachability.m in Sources */,
 				B64CB40B203507A300D208B7 /* MBCircularProgressBarView.m in Sources */,
 			);
