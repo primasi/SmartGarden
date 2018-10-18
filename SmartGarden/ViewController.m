@@ -14,7 +14,8 @@
 #import "RNBlurModalView.h"
 #import "NachrichtenViewController.h"
 #import "StartzeitenViewController.h"
-#import "SwitchSetupController.h"
+#import "AutomaticSwitchSetupController.h"
+#import "ManualSwitchSetupController.h"
 
 #define BASE_URL @"172.20.10.14"
 //#define BASE_URL @"192.168.2.17"
@@ -194,9 +195,23 @@
     {
         
     }
-    if ([self.segueViewController isKindOfClass:[SwitchSetupController class]])
+    if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
     {
+        self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
+        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
+        [self sendMessage:result];
+        [self.smartGardenConfig updateGesamtlaufzeit];
         [self.tableView reloadData];
+    }
+    if ([self.segueViewController isKindOfClass:[ManualSwitchSetupController class]])
+    {
+        ManualSwitchSetupController *controller = (ManualSwitchSetupController*)self.segueViewController;
+        self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
+        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
+        [self sendMessage:result];
+        [self.smartGardenConfig updateGesamtlaufzeit];
+        [self.tableView reloadData];
+        [self sendMessage:[NSString stringWithFormat:@"Schalte %li %i",(long)controller.switchConfig.nummer,[controller.switchConfig.aktiv intValue]]];
     }
 }
 
@@ -516,28 +531,13 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     SwitcherTableCell *cell = (SwitcherTableCell *)[tableView cellForRowAtIndexPath:indexPath];
-   // [cell changeModus];
     [cell setSelected:NO animated:YES];
-    
-    if (indexPath.section == 0)
-    {
-        [self.smartGardenConfig updateGesamtlaufzeit];
-        [self.tableView reloadData];
-        self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
-    }
-    else
-    {
-        [self sendMessage:[NSString stringWithFormat:@"Schalte %li %i",(long)cell.tag,[cell.switchConfig.aktiv intValue]]];
-    }
+    [self performSegueWithIdentifier:indexPath.section == 1 ? @"ManualSwitchSetup" :@"AutomaticSwitchSetup" sender:cell];
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-    NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-    [self sendMessage:result];
+    
 }
 
 - (void) tableView:(UITableView *)tableView didEndReorderingRowAtIndexPath:(NSIndexPath *)indexPath
@@ -637,9 +637,13 @@
     {
         ((StartzeitenViewController*)[segue destinationViewController]).smartGardenConfig = self.smartGardenConfig;
     }
-    if ([segue.identifier isEqualToString:@"SwitchSetup"])
+    if ([segue.identifier isEqualToString:@"AutomaticSwitchSetup"])
     {
-        ((SwitchSetupController*)[segue destinationViewController]).switchConfig = ((SwitcherTableCell*)sender).switchConfig;
+        ((AutomaticSwitchSetupController*)[segue destinationViewController]).switchConfig = ((SwitcherTableCell*)sender).switchConfig;
+    }
+    if ([segue.identifier isEqualToString:@"ManualSwitchSetup"])
+    {
+        ((ManualSwitchSetupController*)[segue destinationViewController]).switchConfig = ((SwitcherTableCell*)sender).switchConfig;
     }
     self.segueViewController = [segue destinationViewController];
 }
