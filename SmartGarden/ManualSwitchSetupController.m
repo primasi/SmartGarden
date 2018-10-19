@@ -20,6 +20,8 @@
 @property (nonatomic, strong) UIPickerView *currentPicker;
 @property (weak, nonatomic) IBOutlet UINavigationItem *switchSetupNavItem;
 
+- (IBAction)stateChanged:(id)sender;
+
 @end
 
 @implementation ManualSwitchSetupController
@@ -34,8 +36,6 @@
     
     self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60];
     
-    //[self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Gesamt"]];
-    
     if (self.switchConfig.url == nil)
     {
         self.schalterartTextView.text = @"Intern";
@@ -44,6 +44,8 @@
     {
         self.schalterartTextView.text = @"Extern";
     }
+    
+    [self.aktivierungSwitch setOn:self.switchConfig.aktiv animated:true];
     
     [self initLaufzeitPicker];
     [self initSchalterartPicker];
@@ -139,7 +141,7 @@
     }
     if (self.currentPicker.tag == 1)
     {
-        NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:2]][0];
+        NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:1]][0];
         self.switchConfig.url = [self.schalterartPicker selectedRowInComponent:0] == 0 ? nil : self.urlTextView.text;
         self.schalterartTextView.text = pickerComponent[[self.schalterartPicker selectedRowInComponent:0]];
         [self.schalterartTextView resignFirstResponder];
@@ -181,5 +183,9 @@
     return [self.pickerData objectForKey:[NSNumber numberWithInteger:pickerView.tag]][component][row];
 }
 
+- (IBAction)stateChanged:(id)sender
+{
+    self.switchConfig.aktiv = [NSNumber numberWithBool:self.aktivierungSwitch.on];
+}
 
 @end

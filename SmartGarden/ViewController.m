@@ -211,7 +211,7 @@
         [self sendMessage:result];
         [self.smartGardenConfig updateGesamtlaufzeit];
         [self.tableView reloadData];
-        [self sendMessage:[NSString stringWithFormat:@"Schalte %li %i",(long)controller.switchConfig.nummer,[controller.switchConfig.aktiv intValue]]];
+        [self sendMessage:[NSString stringWithFormat:@"Schalte %i %i",[controller.switchConfig.nummer intValue],[controller.switchConfig.aktiv intValue]]];
     }
 }
 
@@ -442,7 +442,6 @@
     for (int row = 0;row < [self.tableView numberOfRowsInSection:section];row++)
     {
         SwitcherTableCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section]];
-        cell.laufzeitTextView.editable = enable;
         [cell setUserInteractionEnabled:enable];
     }
 }

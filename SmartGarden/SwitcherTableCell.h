@@ -25,13 +25,13 @@
 @interface SwitcherTableCell : UITableViewCell <UITextViewDelegate>
 
 @property (weak, nonatomic) IBOutlet MBCircularProgressBarView *circularProgressBar;
-@property (weak, nonatomic) IBOutlet UITextView *laufzeitTextView;
+@property (weak, nonatomic) IBOutlet UILabel *laufzeitLabel;
 @property (weak, nonatomic) IBOutlet UILabel *statusView;
 @property (strong, nonatomic) NSTimer *laufzeitTimer;
 @property (strong, nonatomic) SwitchConfig *switchConfig;
 @property (nonatomic, weak, nullable) id<SwitcherTableCellDelegate> delegate;
-@property (nonatomic, strong) NSNumber * stunde;
-@property (nonatomic, strong) NSNumber * minute;
+//@property (nonatomic, strong) NSNumber * stunde;
+//@property (nonatomic, strong) NSNumber * minute;
 
 - (void)initialize;
 - (void)startLaufzeit;

@@ -15,6 +15,10 @@
 
 @implementation SwitchConfig
 
+@synthesize gesamtlaufzeit = _gesamtlaufzeit;
+@synthesize aktuellelaufzeit = _aktuellelaufzeit;
+@synthesize url = _url;
+
 - (NSString *)classToJson
 {
     return [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@,url:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section,self.url];
@@ -27,6 +31,36 @@
         [self setValue:valueOrNil([json valueForKey:subkey]) forKey:subkey];
     }
     return self;
+}
+
+- (NSNumber *) gesamtlaufzeit
+{
+    return [NSNumber numberWithInt:[_gesamtlaufzeit intValue] / 60];
+}
+
+- (void) setGesamtlaufzeit:(NSNumber *) gesamtlaufzeit
+{
+    _gesamtlaufzeit = [NSNumber numberWithInt:[gesamtlaufzeit intValue] * 60];
+}
+
+- (NSNumber *) aktuellelaufzeit
+{
+    return [NSNumber numberWithInt:[_aktuellelaufzeit intValue] / 60];
+}
+
+- (void) setAktuellelaufzeit:(NSNumber *) gesamtlaufzeit
+{
+    _aktuellelaufzeit = [NSNumber numberWithInt:[_aktuellelaufzeit intValue] * 60];
+}
+
+- (NSString *) url
+{
+    return [_url length] == 0 ? nil : _url;
+}
+
+- (void) setUrl:(NSString *) url
+{
+    _url = url;
 }
 
 @end

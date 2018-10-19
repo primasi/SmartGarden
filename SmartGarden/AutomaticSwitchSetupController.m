@@ -174,9 +174,9 @@
 {
     if (self.currentPicker.tag == 0)
     {
-        NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:0]][0];
-        self.switchConfig.gesamtlaufzeit = [NSNumber numberWithInteger:[pickerComponent[[self.laufzeitPicker selectedRowInComponent:0]] intValue] * 60 + [pickerComponent[[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
-        self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [pickerComponent[[self.laufzeitPicker selectedRowInComponent:0]] intValue],[pickerComponent[[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
+        NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:0]];
+        self.switchConfig.gesamtlaufzeit = [NSNumber numberWithInteger:[pickerComponent[0][[self.laufzeitPicker selectedRowInComponent:0]] intValue] * 60 + [pickerComponent[1][[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
+        self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [pickerComponent[0][[self.laufzeitPicker selectedRowInComponent:0]] intValue],[pickerComponent[1][[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
         [self.laufzeitTextView resignFirstResponder];
     }
     if (self.currentPicker.tag == 1)
