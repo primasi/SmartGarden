@@ -45,7 +45,7 @@
         self.schalterartTextView.text = @"Extern";
     }
     
-    [self.aktivierungSwitch setOn:self.switchConfig.aktiv animated:true];
+    [self.aktivierungSwitch setOn:[self.switchConfig.aktiv boolValue] animated:true];
     
     [self initLaufzeitPicker];
     [self initSchalterartPicker];

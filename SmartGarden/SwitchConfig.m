@@ -21,7 +21,12 @@
 
 - (NSString *)classToJson
 {
-    return [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@,url:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section,self.url];
+    NSString *toJson = [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section];
+    if (self.url != nil)
+    {
+        toJson = [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@,url:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section,self.url];
+    }
+    return toJson;
 }
 
 - (SwitchConfig *) initWithJSON:(NSDictionary *) json
@@ -55,7 +60,7 @@
 
 - (NSString *) url
 {
-    return [_url length] == 0 ? nil : _url;
+    return _url == nil ? nil : [_url length] == 0 ? nil : _url;
 }
 
 - (void) setUrl:(NSString *) url

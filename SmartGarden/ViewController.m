@@ -207,11 +207,9 @@
     {
         ManualSwitchSetupController *controller = (ManualSwitchSetupController*)self.segueViewController;
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
         [self.smartGardenConfig updateGesamtlaufzeit];
+        [self sendMessage:[NSString stringWithFormat:@"Schalte %i %i %@",[controller.switchConfig.nummer intValue],[controller.switchConfig.aktiv intValue],[self.smartGardenConfig classToJson]]];
         [self.tableView reloadData];
-        [self sendMessage:[NSString stringWithFormat:@"Schalte %i %i",[controller.switchConfig.nummer intValue],[controller.switchConfig.aktiv intValue]]];
     }
 }
 
