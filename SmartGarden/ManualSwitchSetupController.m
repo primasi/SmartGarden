@@ -30,7 +30,7 @@
 {
     [super viewDidLoad];
     
-    self.switchSetupNavItem.title = [NSString stringWithFormat:@"Schalter %d",[self.switchConfig.nummer intValue]];
+    self.switchSetupNavItem.title = self.switchConfig.name;
     
     self.pickerData = [[NSMutableDictionary alloc] init];
     

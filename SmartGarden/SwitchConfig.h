@@ -18,6 +18,7 @@
 @property (nonatomic, strong) NSNumber * aktuellelaufzeit;
 @property (nonatomic, strong) NSNumber * section;
 @property (nonatomic, strong) NSString * url;
+@property (nonatomic, strong) NSString * name;
 
 - (NSString *)classToJson;
 - (SwitchConfig *) initWithJSON:(NSDictionary *) json;

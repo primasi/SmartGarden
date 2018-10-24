@@ -71,13 +71,13 @@
     {
         if ([self.switchConfig.modus isEqualToString:@"Aus"])
         {
-            self.statusView.text = @"Gesamt";
-            self.switchConfig.modus = @"Gesamt";
+            self.statusView.text = @"Vollzeit";
+            self.switchConfig.modus = @"Vollzeit";
         }
-        else if ([self.switchConfig.modus isEqualToString:@"Gesamt"])
+        else if ([self.switchConfig.modus isEqualToString:@"Vollzeit"])
         {
-            self.statusView.text = @"Einzel";
-            self.switchConfig.modus = @"Einzel";
+            self.statusView.text = @"Teilzeit";
+            self.switchConfig.modus = @"Teilzeit";
         }
         else
         {
@@ -103,10 +103,9 @@
         self.statusView.text = self.switchConfig.modus;
     }
      
-    self.textLabel.text = [NSString stringWithFormat:@"Schalter %i",[self.switchConfig.nummer intValue]];
+    self.textLabel.text = self.switchConfig.name;
     self.tag = [self.switchConfig.nummer intValue];
     
-    //NSLog(@"%@",[NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60]);
     self.laufzeitLabel.text = [NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60];
 }
 

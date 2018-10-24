@@ -29,7 +29,7 @@
 {
     [super viewDidLoad];
     
-    self.switchSetupNavItem.title = [NSString stringWithFormat:@"Schalter %d",[self.switchConfig.nummer intValue]];
+    self.switchSetupNavItem.title = self.switchConfig.name;
     
     self.pickerData = [[NSMutableDictionary alloc] init];
     
@@ -93,8 +93,8 @@
     NSMutableArray *pickerComponents = [[NSMutableArray alloc] init];
     NSMutableArray *pickerModi = [[NSMutableArray alloc] init];
     [pickerModi addObject:@"Aus"];
-    [pickerModi addObject:@"Einzel"];
-    [pickerModi addObject:@"Gesamt"];
+    [pickerModi addObject:@"Teilzeit"];
+    [pickerModi addObject:@"Vollzeit"];
     [pickerComponents insertObject:pickerModi atIndex:0];
     
     self.modusPicker = [[UIPickerView alloc] init];
@@ -108,11 +108,11 @@
     {
         [self.modusPicker selectRow:0 inComponent:0 animated:YES];
     }
-    if ([self.switchConfig.modus isEqualToString:@"Einzel"])
+    if ([self.switchConfig.modus isEqualToString:@"Teilzeit"])
     {
         [self.modusPicker selectRow:1 inComponent:0 animated:YES];
     }
-    if ([self.switchConfig.modus isEqualToString:@"Gesamt"])
+    if ([self.switchConfig.modus isEqualToString:@"Vollzeit"])
     {
         [self.modusPicker selectRow:2 inComponent:0 animated:YES];
     }

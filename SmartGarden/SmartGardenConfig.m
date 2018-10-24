@@ -91,7 +91,7 @@
     }
     subAttributesDevices = [subAttributesDevices stringByAppendingString:@"]"];
     
-    NSString *attributes = [NSString stringWithFormat:@"{automatikAktiviert:%@,badge:%@,pushnotificationId:%@,serverzeit:%@,switches:%@,startzeiten:%@,devices:%@}",                          toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,nil,subAttributesSwitches,subAttributesStartzeiten,subAttributesDevices];
+    NSString *attributes = [NSString stringWithFormat:@"{automatikAktiviert:%@,badge:%@,pushnotificationId:%@,switches:%@,startzeiten:%@,devices:%@}",                          toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,subAttributesSwitches,subAttributesStartzeiten,subAttributesDevices];
 
     return attributes;
 }
@@ -101,14 +101,14 @@
     int laufzeit = 0;
     for (SwitchConfig *switchConfig in [self switchesForSection:0])
     {
-        if ([switchConfig.modus isEqualToString:@"Einzel"])
+        if ([switchConfig.modus isEqualToString:@"Teilzeit"])
         {
             laufzeit += ([switchConfig.gesamtlaufzeit intValue] + 1);
         }
     }
     for (SwitchConfig *switchConfig in [self switchesForSection:0])
     {
-        if ([switchConfig.modus isEqualToString:@"Gesamt"])
+        if ([switchConfig.modus isEqualToString:@"Vollzeit"])
         {
             switchConfig.gesamtlaufzeit = [NSNumber numberWithInt:laufzeit];
         }
@@ -159,7 +159,7 @@
     {
         if (activeSwitchConfig == nil)
         {
-            if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Einzel"])
+            if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Teilzeit"])
             {
                 switchForSwitchConfig = switchConfig;
                 break;
@@ -169,7 +169,7 @@
         {
             if (switchConfig.nummer > activeSwitchConfig.nummer)
             {
-                if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Einzel"])
+                if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Teilzeit"])
                 {
                     switchForSwitchConfig = switchConfig;
                     break;

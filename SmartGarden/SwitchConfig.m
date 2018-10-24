@@ -18,13 +18,14 @@
 @synthesize gesamtlaufzeit = _gesamtlaufzeit;
 @synthesize aktuellelaufzeit = _aktuellelaufzeit;
 @synthesize url = _url;
+@synthesize name = _name;
 
 - (NSString *)classToJson
 {
-    NSString *toJson = [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section];
+    NSString *toJson = [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@,name:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section,self.name];
     if (self.url != nil)
     {
-        toJson = [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@,url:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section,self.url];
+        toJson = [NSString stringWithFormat:@"{nummer:%@,aktiv:%@,modus:%@,gesamtlaufzeit:%@,aktuellelaufzeit:%@,section:%@,name:%@,url:%@}",self.nummer,toBoolString(self.aktiv),self.modus,self.gesamtlaufzeit,self.aktuellelaufzeit,self.section,self.name,self.url];
     }
     return toJson;
 }
@@ -66,6 +67,17 @@
 - (void) setUrl:(NSString *) url
 {
     _url = url;
+}
+
+- (NSString *) name
+{
+    NSString *defaultName = [NSString stringWithFormat:@"Schalter %d",[self.nummer intValue]];
+    return _name == nil ? defaultName : [_name length] == 0 ? defaultName : _name;
+}
+
+- (void) setName:(NSString *) name
+{
+    _name = name;
 }
 
 @end
