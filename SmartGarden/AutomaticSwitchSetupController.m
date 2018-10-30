@@ -33,7 +33,7 @@
     
     self.pickerData = [[NSMutableDictionary alloc] init];
     
-    self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60];
+    self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60];
     
     self.modusTextView.text = self.switchConfig.modus;
     [self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Gesamt"]];
@@ -175,7 +175,7 @@
     if (self.currentPicker.tag == 0)
     {
         NSMutableArray* pickerComponent = [self.pickerData objectForKey:[NSNumber numberWithInteger:0]];
-        self.switchConfig.gesamtlaufzeit = [NSNumber numberWithInteger:[pickerComponent[0][[self.laufzeitPicker selectedRowInComponent:0]] intValue] * 60 + [pickerComponent[1][[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
+        self.switchConfig.gesamtlaufzeit = [NSNumber numberWithInteger:([pickerComponent[0][[self.laufzeitPicker selectedRowInComponent:0]] intValue] * 60 + [pickerComponent[1][[self.laufzeitPicker selectedRowInComponent:1]] intValue]) * 60];
         self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [pickerComponent[0][[self.laufzeitPicker selectedRowInComponent:0]] intValue],[pickerComponent[1][[self.laufzeitPicker selectedRowInComponent:1]] intValue]];
         [self.laufzeitTextView resignFirstResponder];
     }

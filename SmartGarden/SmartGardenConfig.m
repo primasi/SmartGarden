@@ -91,7 +91,7 @@
     }
     subAttributesDevices = [subAttributesDevices stringByAppendingString:@"]"];
     
-    NSString *attributes = [NSString stringWithFormat:@"{automatikAktiviert:%@,badge:%@,pushnotificationId:%@,switches:%@,startzeiten:%@,devices:%@}",                          toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,subAttributesSwitches,subAttributesStartzeiten,subAttributesDevices];
+    NSString *attributes = [NSString stringWithFormat:@"-{automatikAktiviert:%@,badge:%@,pushnotificationId:%@,switches:%@,startzeiten:%@}",                          toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,subAttributesSwitches,subAttributesStartzeiten];
 
     return attributes;
 }
@@ -103,7 +103,7 @@
     {
         if ([switchConfig.modus isEqualToString:@"Teilzeit"])
         {
-            laufzeit += ([switchConfig.gesamtlaufzeit intValue] + 1);
+            laufzeit += ([switchConfig.gesamtlaufzeit intValue] + 60);
         }
     }
     for (SwitchConfig *switchConfig in [self switchesForSection:0])

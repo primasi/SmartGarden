@@ -54,7 +54,9 @@
         if (self.circularProgressBar.value >= 100)
         {
             self.circularProgressBar.value = 100;
-            [self stopLaufzeit];
+            NSLog(@"Stoppe Schalter %@",self.switchConfig.nummer);
+            [timer invalidate];
+            //timer = nil;
         }
     }];
 }
@@ -106,7 +108,7 @@
     self.textLabel.text = self.switchConfig.name;
     self.tag = [self.switchConfig.nummer intValue];
     
-    self.laufzeitLabel.text = [NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / 60,[self.switchConfig.gesamtlaufzeit intValue] % 60];
+    self.laufzeitLabel.text = [NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60];
 }
 
 @end
