@@ -161,7 +161,8 @@
 
 - (void)refreshStatus
 {
-    if (![self sendMessage:@"Status"])
+    self.smartGardenConfig.action = @"Status";
+    if (![self sendMessage])
     {
         [self.tableView.refreshControl endRefreshing];
         RNBlurModalView *modal = [[RNBlurModalView alloc] initWithTitle:@"Fehler!" message:@"Der Server ist zur Zeit nicht erreichbar!"];
@@ -177,29 +178,26 @@
 
 - (void)willEnterForeground
 {
-    if (![self sendMessage:@"Status"])
-    {
-        RNBlurModalView *modal = [[RNBlurModalView alloc] initWithTitle:@"Fehler!" message:@"Der Server ist zur Zeit nicht erreichbar!"];
-        [modal show];
-    }
+    [self initNetworkCommunication];
 }
+
 - (void)viewWillAppear:(BOOL)animated
 {
     if ([self.segueViewController isKindOfClass:[StartzeitenViewController class]])
     {
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
+        self.smartGardenConfig.action = @"Uebertragen";
+        [self sendMessage];
     }
     if ([self.segueViewController isKindOfClass:[NachrichtenViewController class]])
     {
-        
+        [self.nachrichtenButton setTitle:@"Nachrichten"];
     }
     if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
     {
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
+        self.smartGardenConfig.action = @"Uebertragen";
+        [self sendMessage];
         [self.smartGardenConfig updateGesamtlaufzeit];
         [self.tableView reloadData];
     }
@@ -208,7 +206,10 @@
         ManualSwitchSetupController *controller = (ManualSwitchSetupController*)self.segueViewController;
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
         [self.smartGardenConfig updateGesamtlaufzeit];
-        [self sendMessage:[NSString stringWithFormat:@"Schalte %i %i %@",[controller.switchConfig.nummer intValue],[controller.switchConfig.aktiv intValue],[self.smartGardenConfig classToJson]]];
+        self.smartGardenConfig.action = @"Schalte";
+        self.smartGardenConfig.control = controller.switchConfig.nummer;
+        self.smartGardenConfig.state = controller.switchConfig.aktiv;
+        [self sendMessage];
         [self.tableView reloadData];
     }
 }
@@ -251,18 +252,13 @@
     self.streamEvent = NSStreamEventErrorOccurred;
 }
 
-- (BOOL)sendMessage:(NSString *)message
+- (BOOL)sendMessage
 {
     [self initNetworkCommunication];
     
-    //self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval: 5 target: self selector: @selector(timeoutTimerCallback:) userInfo: nil repeats: NO];
-    //[[NSRunLoop mainRunLoop] addTimer:self.timeoutTimer forMode:NSRunLoopCommonModes];
-    
-    //(while (self.streamEvent != NSStreamEventOpenCompleted && self.streamEvent != NSStreamEventErrorOccurred);
- 
     if ([self.outputStream streamStatus] == NSStreamStatusOpen)
     {
-        NSData *data = [[NSData alloc] initWithData:[message dataUsingEncoding:NSASCIIStringEncoding]];
+        NSData *data = [[NSData alloc] initWithData:[[self.smartGardenConfig classToJson] dataUsingEncoding:NSASCIIStringEncoding]];
         [self.outputStream write:[data bytes] maxLength:[data length]];
         return true;
     }
@@ -316,47 +312,42 @@
                     len = [_inputStream read:buffer maxLength:sizeof(buffer)];
                     if (len > 0)
                     {
+                        NSError *jsonError;
+                        
                         NSString *receiveString = [[NSString alloc] initWithBytes:buffer length:len encoding:NSASCIIStringEncoding];
                         NSLog(@"Server said: %@", receiveString);
-                        
-                        if ([receiveString hasPrefix:@"Schalte"])
+                        NSDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:[receiveString dataUsingEncoding:NSASCIIStringEncoding] options:NSJSONReadingMutableContainers error:&jsonError];
+                        if (jsonError == nil)
                         {
-                            NSArray *switchInformation = [receiveString componentsSeparatedByString:@" "];
-                            SwitcherTableCell *cell = [self cellForSwitchNumber:[[switchInformation objectAtIndex:1] intValue]];
-                            if ([[switchInformation objectAtIndex:2] intValue] == 1)
+                            [self.smartGardenConfig initWithJSON:jsonObject];
+                            if ([self.smartGardenConfig.action isEqualToString:@"Schalte"])
                             {
+                                NSArray *switchInformation = [receiveString componentsSeparatedByString:@" "];
+                                SwitcherTableCell *cell = [self cellForSwitchNumber:[[switchInformation objectAtIndex:1] intValue]];
+                                if ([[switchInformation objectAtIndex:2] intValue] == 1)
+                                {
+                                    [cell startLaufzeit];
+                                }
+                                else
+                                {
+                                    [cell stopLaufzeit];
+                                }
+                            }
+                            if ([self.smartGardenConfig.action isEqualToString:@"Start"])
+                            {
+                                [self.startButton setTitle:@"Stop"];
+                                [self enableConfigure:NO];
+                                SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:nil].nummer intValue]];
                                 [cell startLaufzeit];
                             }
-                            else
+                            if ([self.smartGardenConfig.action isEqualToString:@"Stop"])
                             {
+                                [self.startButton setTitle:@"Start"];
+                                [self enableConfigure:YES];
+                                SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:nil].nummer intValue]];
                                 [cell stopLaufzeit];
                             }
-                        }
-                        if ([receiveString hasPrefix:@"Start"])
-                        {
-                            [self.startButton setTitle:@"Stop"];
-                            [self enableConfigure:NO];
-                            SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:nil].nummer intValue]];
-                            [cell startLaufzeit];
-                        }
-                        if ([receiveString hasPrefix:@"Stop"])
-                        {
-                            [self.startButton setTitle:@"Start"];
-                            [self enableConfigure:YES];
-                            SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:nil].nummer intValue]];
-                            [cell stopLaufzeit];
-                        }
-                        if ([receiveString hasPrefix:@"Uebertragen"])
-                        {
-                            
-                        }
-                        if ([receiveString hasPrefix:@"Status"])
-                        {
-                            NSError *jsonError;
-                            
-                            //receiveString = [receiveString stringByReplacingOccurrencesOfString:@"(null)" withString:@"null"];
-                            NSDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:[[receiveString substringFromIndex:[@"Status" length] + 1] dataUsingEncoding:NSASCIIStringEncoding] options:NSJSONReadingMutableContainers error:&jsonError];
-                            if (jsonError == nil)
+                            if ([self.smartGardenConfig.action isEqualToString:@"Status"])
                             {
                                 [self.smartGardenConfig initWithJSON:jsonObject];
                                 [self.tableView reloadData];
@@ -377,9 +368,10 @@
                                 {
                                     [self.startButton setTitle:@"Start"];
                                 }
+                                [self.nachrichtenButton setTitle:[NSString stringWithFormat:@"Nachrichten (%i)",[self.smartGardenConfig.badge intValue]]];
                             }
-                            [self.tableView.refreshControl endRefreshing];
                         }
+                        [self.tableView.refreshControl endRefreshing];
                     }
                 }
             }
@@ -403,7 +395,8 @@
             NSLog(@"Has Space available");
             if (self.streamEvent == NSStreamEventOpenCompleted)
             {
-                [self sendMessage:@"Status"];
+                self.smartGardenConfig.action = @"Status";
+                [self sendMessage];
             }
             break;
             
@@ -503,8 +496,8 @@
     if (self.tableView.editing)
     {
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
+        self.smartGardenConfig.action = @"Uebertragen";
+        [self sendMessage];
     }
     [self.tableView setEditing:!self.tableView.editing animated:YES];
     
@@ -555,7 +548,8 @@
 
 - (IBAction)statusButtonClicked:(id)sender
 {
-    if (![self sendMessage:@"Status"])
+    self.smartGardenConfig.action = @"Status";
+    if (![self sendMessage])
     {
         RNBlurModalView *modal = [[RNBlurModalView alloc] initWithTitle:@"Fehler!" message:@"Der Server ist zur Zeit nicht erreichbar!"];
         [modal show];
@@ -564,7 +558,8 @@
 
 - (IBAction)startButtonClicked:(id)sender
 {
-    [self sendMessage:self.startButton.title];
+    self.smartGardenConfig.action = self.startButton.title;
+    [self sendMessage];
 }
 
 - (void)tableCellLaufzeitChanged:(nonnull SwitcherTableCell *)switcherTableCell
@@ -572,23 +567,26 @@
     [self.smartGardenConfig updateGesamtlaufzeit];
     [self.tableView reloadData];
     self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-    NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-    [self sendMessage:result];
+    self.smartGardenConfig.action = @"Uebertragen";
+    [self sendMessage];
 }
 
 - (void)tableCellSwitchChanged:(nonnull SwitcherTableCell *)switcherTableCell
 {
     if ([switcherTableCell.switchConfig.section intValue] == 1)
     {
-        [self sendMessage:[NSString stringWithFormat:@"Schalte %li %i",(long)switcherTableCell.tag,[switcherTableCell.switchConfig.aktiv intValue]]];
+        self.smartGardenConfig.action = @"Schalte";
+        self.smartGardenConfig.control = [NSNumber numberWithInteger:switcherTableCell.tag];
+        self.smartGardenConfig.state = switcherTableCell.switchConfig.aktiv;
+        [self sendMessage];
     }
     else
     {
         [self.smartGardenConfig updateGesamtlaufzeit];
         [self.tableView reloadData];
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
+        self.smartGardenConfig.action = @"Uebertragen";
+        [self sendMessage];
     }
 }
 
@@ -616,8 +614,8 @@
             }
         }
     }
-    int badge = [[[[notification userInfo] objectForKey:@"aps"] objectForKey:@"badge"] intValue];
-    [self.nachrichtenButton setTitle:[NSString stringWithFormat:@"Nachrichten (%i)",badge]];
+    self.smartGardenConfig.badge = [[[notification userInfo] objectForKey:@"aps"] objectForKey:@"badge"];
+    [self.nachrichtenButton setTitle:[NSString stringWithFormat:@"Nachrichten (%i)",[self.smartGardenConfig.badge intValue]]];
 }
 
 - (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -627,8 +625,8 @@
         [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
         self.smartGardenConfig.badge = [NSNumber numberWithInt:0];
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        NSString *result = [NSString stringWithFormat:@"Uebertragen %@",[self.smartGardenConfig classToJson]];
-        [self sendMessage:result];
+        self.smartGardenConfig.action = @"Uebertragen";
+        [self sendMessage];
     }
     if ([segue.identifier isEqualToString:@"Startzeiten"])
     {

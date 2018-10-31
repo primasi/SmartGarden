@@ -15,6 +15,19 @@
 
 @implementation SmartGardenConfig
 
+- (id) init
+{
+    self = [super init];
+    if (self)
+    {
+        self.control = [NSNumber numberWithInt:0];
+        self.state = false;
+        self.badge = [NSNumber numberWithInt:0];
+        self.pushnotificationId = nil;
+    }
+    return self;
+}
+
 - (void) initWithJSON:(NSDictionary *) json
 {
     for (NSString *key in [json allKeys])
@@ -50,7 +63,6 @@
         }
         else
         {
-            //[self setValue:[[json valueForKey:key] isEqualToString:@"(null)"] ? nil : [json valueForKey:key] forKey:key];
             [self setValue:[json valueForKey:key] forKey:key];
         }
     }
@@ -91,7 +103,7 @@
     }
     subAttributesDevices = [subAttributesDevices stringByAppendingString:@"]"];
     
-    NSString *attributes = [NSString stringWithFormat:@"-{automatikAktiviert:%@,badge:%@,pushnotificationId:%@,switches:%@,startzeiten:%@}",                          toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,subAttributesSwitches,subAttributesStartzeiten];
+    NSString *attributes = [NSString stringWithFormat:@"{action:%@,control:%@,state:%@,automatikAktiviert:%@,badge:%@,pushnotificationId:%@,switches:%@,startzeiten:%@}",                          self.action,self.control,toBoolString(self.state),toBoolString(self.automatikAktiviert),self.badge,self.pushnotificationId,subAttributesSwitches,subAttributesStartzeiten];
 
     return attributes;
 }

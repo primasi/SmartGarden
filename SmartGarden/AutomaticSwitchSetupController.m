@@ -9,6 +9,7 @@
 #import "AutomaticSwitchSetupController.h"
 
 @interface AutomaticSwitchSetupController () <UITableViewDataSource, UITableViewDelegate, UIPickerViewDataSource, UIPickerViewDelegate>
+@property (weak, nonatomic) IBOutlet UITextView *nameTextView;
 
 @property (weak, nonatomic) IBOutlet UITextView *laufzeitTextView;
 @property (weak, nonatomic) IBOutlet UITextView *modusTextView;
@@ -167,7 +168,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return self.switchConfig.url == nil ? 3 : 4;
+    return self.switchConfig.url == nil ? 4 : 5;
 }
 
 - (void) handleDoneButton:(id)sender

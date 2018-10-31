@@ -12,6 +12,9 @@
 
 @interface SmartGardenConfig : NSObject
 
+@property (nonatomic, strong) NSString * action;
+@property (nonatomic, strong) NSNumber * control;
+@property (nonatomic, strong) NSNumber * state;
 @property (nonatomic, strong) NSNumber * automatikAktiviert;
 @property (nonatomic, strong) NSNumber * badge;
 @property (nonatomic, strong) NSString * pushnotificationId;
