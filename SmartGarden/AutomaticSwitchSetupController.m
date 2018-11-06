@@ -31,13 +31,14 @@
     [super viewDidLoad];
     
     self.switchSetupNavItem.title = self.switchConfig.name;
+    self.nameTextView.text = self.switchConfig.name;
     
     self.pickerData = [[NSMutableDictionary alloc] init];
     
     self.laufzeitTextView.text = [NSString stringWithFormat:@"%02i Stunden %02i Minuten", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60];
     
     self.modusTextView.text = self.switchConfig.modus;
-    [self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Gesamt"]];
+    [self.laufzeitTextView setUserInteractionEnabled:![self.switchConfig.modus isEqualToString:@"Vollzeit"]];
     
     if (self.switchConfig.url == nil)
     {

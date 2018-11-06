@@ -44,6 +44,7 @@
     NSLog(@"Stoppe Schalter %@",self.switchConfig.nummer);
     [self.laufzeitTimer invalidate];
     self.laufzeitTimer = nil;
+    self.circularProgressBar.value = [self.switchConfig.aktuellelaufzeit floatValue];
 }
 
 - (void)laufzeitTimerCallback:(NSTimer *)timer
@@ -53,7 +54,7 @@
         self.circularProgressBar.value += 100 / [self.switchConfig.gesamtlaufzeit floatValue];
         if (self.circularProgressBar.value >= 100)
         {
-            self.circularProgressBar.value = 100;
+            self.circularProgressBar.value = 100.00;
             NSLog(@"Stoppe Schalter %@",self.switchConfig.nummer);
             [timer invalidate];
             //timer = nil;

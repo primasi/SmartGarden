@@ -545,7 +545,7 @@
 #pragma mark - UITableViewDelegate
 
 #pragma mark - UIBarButtonItem
-
+/*
 - (IBAction)statusButtonClicked:(id)sender
 {
     self.smartGardenConfig.action = @"Status";
@@ -555,7 +555,7 @@
         [modal show];
     }
 }
-
+*/
 - (IBAction)startButtonClicked:(id)sender
 {
     self.smartGardenConfig.action = self.startButton.title;
@@ -610,6 +610,8 @@
             }
             else
             {
+                self.smartGardenConfig.action = @"Status";
+                [self sendMessage];
                 [cell stopLaufzeit];
             }
         }

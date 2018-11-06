@@ -31,6 +31,7 @@
     [super viewDidLoad];
     
     self.switchSetupNavItem.title = self.switchConfig.name;
+    self.nameTextView.text = self.switchConfig.name;
     
     self.pickerData = [[NSMutableDictionary alloc] init];
     
