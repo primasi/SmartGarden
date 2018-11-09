@@ -80,9 +80,9 @@
     [self.laufzeitTextView setInputView:self.laufzeitPicker];
     [self.pickerData setObject:pickerComponents forKey:[NSNumber numberWithInteger:0]];
     
-    [self.laufzeitPicker selectRow:[self.switchConfig.gesamtlaufzeit intValue] / 60 inComponent:0 animated:YES];
-    [self.laufzeitPicker selectRow:[self.switchConfig.gesamtlaufzeit intValue] % 60 inComponent:1 animated:YES];
-    
+    [self.laufzeitPicker selectRow:[self.switchConfig.gesamtlaufzeit intValue] / (60 * 60) inComponent:0 animated:YES];
+    [self.laufzeitPicker selectRow:([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60 inComponent:1 animated:YES];
+        
     UIToolbar *laufzeitPickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
     [laufzeitPickerToolbar setTintColor:[UIColor grayColor]];
     UIBarButtonItem *doneBtn = [[UIBarButtonItem alloc]initWithTitle:@"Fertig" style:UIBarButtonItemStylePlain target:self action:@selector(handleDoneButton:)];
