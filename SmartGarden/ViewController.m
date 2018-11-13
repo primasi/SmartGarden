@@ -195,20 +195,23 @@
     }
     if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
     {
+        AutomaticSwitchSetupController *controller = (AutomaticSwitchSetupController*)self.segueViewController;
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
+        [self.smartGardenConfig.switches setObject:controller.switchConfig forKey:controller.switchConfig.nummer];
+        [self.smartGardenConfig updateGesamtlaufzeit];
         self.smartGardenConfig.action = @"Uebertragen";
         [self sendMessage];
-        [self.smartGardenConfig updateGesamtlaufzeit];
         [self.tableView reloadData];
     }
     if ([self.segueViewController isKindOfClass:[ManualSwitchSetupController class]])
     {
         ManualSwitchSetupController *controller = (ManualSwitchSetupController*)self.segueViewController;
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        [self.smartGardenConfig updateGesamtlaufzeit];
         self.smartGardenConfig.action = @"Schalte";
         self.smartGardenConfig.control = controller.switchConfig.nummer;
         self.smartGardenConfig.state = controller.switchConfig.aktiv;
+        [self.smartGardenConfig.switches setObject:controller.switchConfig forKey:controller.switchConfig.nummer];
+        [self.smartGardenConfig updateGesamtlaufzeit];
         [self sendMessage];
         [self.tableView reloadData];
     }
@@ -545,17 +548,7 @@
 #pragma mark - UITableViewDelegate
 
 #pragma mark - UIBarButtonItem
-/*
-- (IBAction)statusButtonClicked:(id)sender
-{
-    self.smartGardenConfig.action = @"Status";
-    if (![self sendMessage])
-    {
-        RNBlurModalView *modal = [[RNBlurModalView alloc] initWithTitle:@"Fehler!" message:@"Der Server ist zur Zeit nicht erreichbar!"];
-        [modal show];
-    }
-}
-*/
+
 - (IBAction)startButtonClicked:(id)sender
 {
     self.smartGardenConfig.action = self.startButton.title;

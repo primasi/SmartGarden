@@ -10,7 +10,6 @@
 
 @interface AutomaticSwitchSetupController () <UITableViewDataSource, UITableViewDelegate, UIPickerViewDataSource, UIPickerViewDelegate>
 @property (weak, nonatomic) IBOutlet UITextView *nameTextView;
-
 @property (weak, nonatomic) IBOutlet UITextView *laufzeitTextView;
 @property (weak, nonatomic) IBOutlet UITextView *modusTextView;
 @property (weak, nonatomic) IBOutlet UITextView *schalterartTextView;

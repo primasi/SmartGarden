@@ -115,7 +115,7 @@
     {
         if ([switchConfig.modus isEqualToString:@"Teilzeit"])
         {
-            laufzeit += ([switchConfig.gesamtlaufzeit intValue] + 10);
+            laufzeit += ([switchConfig.gesamtlaufzeit intValue]);
         }
     }
     for (SwitchConfig *switchConfig in [self switchesForSection:0])
