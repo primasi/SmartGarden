@@ -111,7 +111,7 @@
     
     self.laufzeitLabel.text = [NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60];
     
-    self.circularProgressBar.value = 0;
+    self.circularProgressBar.value = 100 * [self.switchConfig.aktuellelaufzeit floatValue] / [self.switchConfig.gesamtlaufzeit floatValue];
     self.circularProgressBar.maxValue = 100;
 }
 

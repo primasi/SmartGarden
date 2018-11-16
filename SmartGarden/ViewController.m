@@ -40,6 +40,7 @@
 @property (strong, nonatomic) NSTimer *timeoutTimer;
 @property (strong, nonatomic) UIViewController *segueViewController;
 @property NSStreamEvent streamEvent;
+@property BOOL sending;
 
 - (IBAction)startButtonClicked:(id)sender;
 
@@ -120,8 +121,14 @@
             }
         }
         NSDateComponents *components = [calendar components:(NSCalendarUnitHour |NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:servertime toDate:startzeit options:0];
-        self.countdownTextField.text = [NSString stringWithFormat:@"%02lih %02lim %02lis",components.hour,components.minute,components.second];
-        
+        if ([self.smartGardenConfig.automatikAktiviert boolValue])
+        {
+            self.countdownTextField.text = [NSString stringWithFormat:@"%02lih %02lim %02lis",components.hour,components.minute,components.second];
+        }
+        else
+        {
+            self.countdownTextField.text = @"";
+        }
         NSMutableArray *weekdays = [[NSMutableArray alloc] initWithObjects:@"Sonntag", @"Montag", @"Dienstag", @"Mittwoch", @"Donnerstag", @"Freitag", @"Samstag", nil];
         components = [calendar components:(NSCalendarUnitWeekday | NSCalendarUnitHour | NSCalendarUnitMinute) fromDate:startzeit];
         self.startzeitTextField.text = [NSString stringWithFormat:@"%@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
@@ -138,6 +145,8 @@
     [super viewDidLoad];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(incomingPushNotification:) name:@"incomingPushNotification" object:nil];
+    
+    self.sending = false;
     
     self.smartGardenConfig = [[SmartGardenConfig alloc] init];
     self.smartGardenConfig.startzeiten = [[NSMutableArray alloc] init];
@@ -192,6 +201,9 @@
     if ([self.segueViewController isKindOfClass:[NachrichtenViewController class]])
     {
         [self.nachrichtenButton setTitle:@"Nachrichten"];
+        self.smartGardenConfig.badge = 0;
+        self.smartGardenConfig.action = @"Uebertragen";
+        [self sendMessage];
     }
     if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
     {
@@ -259,10 +271,11 @@
 {
     [self initNetworkCommunication];
     
-    if ([self.outputStream streamStatus] == NSStreamStatusOpen)
+    if ([self.outputStream streamStatus] == NSStreamStatusOpen && !self.sending)
     {
         NSData *data = [[NSData alloc] initWithData:[[self.smartGardenConfig classToJson] dataUsingEncoding:NSASCIIStringEncoding]];
         [self.outputStream write:[data bytes] maxLength:[data length]];
+        self.sending = true;
         return true;
     }
     else
@@ -375,6 +388,7 @@
                             }
                         }
                         [self.tableView.refreshControl endRefreshing];
+                        self.sending = false;
                     }
                 }
             }
@@ -607,6 +621,15 @@
                 [self sendMessage];
                 [cell stopLaufzeit];
             }
+        }
+    }
+    switchInformation = [[[notification userInfo] objectForKey:@"Intervall"] componentsSeparatedByString:@" "];
+    if (switchInformation != nil)
+    {
+        if ([[switchInformation objectAtIndex:1] intValue] == 1)
+        {
+            self.smartGardenConfig.action = @"Status";
+            [self sendMessage];
         }
     }
     self.smartGardenConfig.badge = [[[notification userInfo] objectForKey:@"aps"] objectForKey:@"badge"];
