@@ -200,8 +200,8 @@
     }
     if ([self.segueViewController isKindOfClass:[NachrichtenViewController class]])
     {
-        [self.nachrichtenButton setTitle:@"Nachrichten"];
-        self.smartGardenConfig.badge = 0;
+        self.smartGardenConfig.badge = [NSNumber numberWithInt:0];
+        [self.nachrichtenButton setTitle:[NSString stringWithFormat:@"Nachrichten (%i)",[self.smartGardenConfig.badge intValue]]];
         self.smartGardenConfig.action = @"Uebertragen";
         [self sendMessage];
     }
@@ -445,6 +445,24 @@
     return nil;
 }
 
+- (NSMutableArray *)cellForSwitchModus:(NSString *) modus
+{
+    NSMutableArray *cells = [[NSMutableArray alloc] init];
+    
+    for (int section = 0;section < self.tableView.numberOfSections;section++)
+    {
+        for (int row = 0;row < [self.tableView numberOfRowsInSection:section];row++)
+        {
+            SwitcherTableCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section]];
+            if ([cell.switchConfig.modus isEqualToString:modus])
+            {
+                [cells addObject:cell];
+            }
+        }
+    }
+    return cells;
+}
+
 - (void)enableSection:(int) section enable:(BOOL)enable
 {
     for (int row = 0;row < [self.tableView numberOfRowsInSection:section];row++)
@@ -566,6 +584,7 @@
 - (IBAction)startButtonClicked:(id)sender
 {
     self.smartGardenConfig.action = self.startButton.title;
+    self.smartGardenConfig.automatikAktiviert = [NSNumber numberWithBool:[self.smartGardenConfig.action isEqualToString:@"Start"]];
     [self sendMessage];
 }
 
@@ -613,13 +632,27 @@
         {
             if ([[switchInformation objectAtIndex:1] intValue] == 1)
             {
+                self.smartGardenConfig.action = @"Status";
+                [self sendMessage];
                 [cell startLaufzeit];
+                if ([cell.switchConfig.modus isEqualToString:@"Teilzeit"])
+                {
+                    for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
+                    {
+                        [switchCell startLaufzeit];
+                    }
+                }
             }
             else
             {
-                self.smartGardenConfig.action = @"Status";
-                [self sendMessage];
                 [cell stopLaufzeit];
+                if ([cell.switchConfig.modus isEqualToString:@"Teilzeit"])
+                {
+                    for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
+                    {
+                        [switchCell stopLaufzeit];
+                    }
+                }
             }
         }
     }
