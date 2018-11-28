@@ -52,11 +52,7 @@
     [UIView animateWithDuration:1.0f animations:^
     {
         self.switchConfig.aktuellelaufzeit = [NSNumber numberWithInt:[self.switchConfig.aktuellelaufzeit intValue] + 1];
-        if ([self.switchConfig.nummer intValue] == 7)
-        {
-            NSLog(@"%f %f",self.circularProgressBar.value,100.00f / [self.switchConfig.gesamtlaufzeit floatValue]);
-        }
-        self.circularProgressBar.value += 100.00f * [self.switchConfig.aktuellelaufzeit floatValue] / [self.switchConfig.gesamtlaufzeit floatValue];
+        self.circularProgressBar.value = 100.00f * [self.switchConfig.aktuellelaufzeit floatValue] / [self.switchConfig.gesamtlaufzeit floatValue];
         if (self.circularProgressBar.value >= 100.00f)
         {
             self.circularProgressBar.value = 100.00f;
@@ -74,7 +70,7 @@
 
 -(void)initialize
 {
-    if ([self.switchConfig.section intValue] == 1)
+    if ([self.switchConfig.section intValue] == 2)
     {
         self.statusView.text = ([self.switchConfig.aktiv boolValue] ? @"An" : @"Aus");
     }

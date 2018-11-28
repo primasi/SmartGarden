@@ -121,16 +121,20 @@
             }
         }
         NSDateComponents *components = [calendar components:(NSCalendarUnitHour |NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:servertime toDate:startzeit options:0];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
         if ([self.smartGardenConfig.automatikAktiviert boolValue])
         {
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"Verbleibende Zeit bis zum Start: %02lih %02lim %02lis",components.hour,components.minute,components.second];
             self.countdownTextField.text = [NSString stringWithFormat:@"%02lih %02lim %02lis",components.hour,components.minute,components.second];
         }
         else
         {
+            cell.detailTextLabel.text = @"";
             self.countdownTextField.text = @"";
         }
         NSMutableArray *weekdays = [[NSMutableArray alloc] initWithObjects:@"Sonntag", @"Montag", @"Dienstag", @"Mittwoch", @"Donnerstag", @"Freitag", @"Samstag", nil];
         components = [calendar components:(NSCalendarUnitWeekday | NSCalendarUnitHour | NSCalendarUnitMinute) fromDate:startzeit];
+        cell.textLabel.text = [NSString stringWithFormat:@"Nächster Start am %@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
         self.startzeitTextField.text = [NSString stringWithFormat:@"%@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
     }
     else
@@ -151,7 +155,7 @@
     self.smartGardenConfig = [[SmartGardenConfig alloc] init];
     self.smartGardenConfig.startzeiten = [[NSMutableArray alloc] init];
     
-    self.sectionsText = [NSMutableArray arrayWithObjects:@"Automatisch", @"Manuell", nil];
+    self.sectionsText = [NSMutableArray arrayWithObjects:@"Startzeit", @"Automatisch", @"Manuell", nil];
     
     [self initNetworkCommunication];
     
@@ -353,15 +357,27 @@
                             {
                                 [self.startButton setTitle:@"Stop"];
                                 [self enableConfigure:NO];
-                                SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:nil].nummer intValue]];
-                                [cell startLaufzeit];
+                                /*
+                                SwitchConfig *switchConfig = [self.smartGardenConfig nextActiveSwitchConfig:nil];
+                                if (switchConfig != nil)
+                                {
+                                    SwitcherTableCell *cell = [self cellForSwitchNumber:[switchConfig.nummer intValue]];
+                                    [cell startLaufzeit];
+                                }
+                                */
                             }
                             if ([self.smartGardenConfig.action isEqualToString:@"Stop"])
                             {
                                 [self.startButton setTitle:@"Start"];
                                 [self enableConfigure:YES];
-                                SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:nil].nummer intValue]];
-                                [cell stopLaufzeit];
+                                /*
+                                SwitchConfig *switchConfig = [self.smartGardenConfig nextActiveSwitchConfig:nil];
+                                if (switchConfig != nil)
+                                {
+                                    SwitcherTableCell *cell = [self cellForSwitchNumber:[switchConfig.nummer intValue]];
+                                    [cell stopLaufzeit];
+                                }
+                                */
                             }
                             if ([self.smartGardenConfig.action isEqualToString:@"Status"])
                             {
@@ -431,7 +447,7 @@
 
 - (SwitcherTableCell *)cellForSwitchNumber:(int) number
 {
-    for (int section = 0;section < self.tableView.numberOfSections;section++)
+    for (int section = 1;section < self.tableView.numberOfSections;section++)
     {
         for (int row = 0;row < [self.tableView numberOfRowsInSection:section];row++)
         {
@@ -449,7 +465,7 @@
 {
     NSMutableArray *cells = [[NSMutableArray alloc] init];
     
-    for (int section = 0;section < self.tableView.numberOfSections;section++)
+    for (int section = 1;section < self.tableView.numberOfSections;section++)
     {
         for (int row = 0;row < [self.tableView numberOfRowsInSection:section];row++)
         {
@@ -474,15 +490,28 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    int switchesSection0 = 0;
     int switchesSection1 = 0;
+    int switchesSection2 = 0;
     
     for (SwitchConfig *switchConfig in [self.smartGardenConfig.switches allValues])
     {
-        switchesSection0 += ([switchConfig.section intValue] == 0 ? 1 : 0);
         switchesSection1 += ([switchConfig.section intValue] == 1 ? 1 : 0);
+        switchesSection2 += ([switchConfig.section intValue] == 2 ? 1 : 0);
     }
-    return section == 0 ? switchesSection0 : switchesSection1;
+    
+    int rows = 0;
+    switch (section)
+    {
+        case 0:
+            rows = 1;
+            break;
+        case 1:
+            rows = switchesSection1;
+            break;
+        case 2:
+            rows = switchesSection2;
+    }
+    return rows;
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
@@ -492,22 +521,35 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    SwitcherTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SwitcherTableCell"];
-    if (cell == nil)
+    if (indexPath.section == 0)
     {
-        cell = [[SwitcherTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SwitcherTableCell"];
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StartzeitTableCell"];
+        if (cell == nil)
+        {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"StartzeitTableCell"];
+        }
+        cell.textLabel.text = @"Startzeit";
+        cell.detailTextLabel.text = @"Uhrzeit";
+        return cell;
     }
+    else
+    {
+        SwitcherTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SwitcherTableCell"];
+        if (cell == nil)
+        {
+            cell = [[SwitcherTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SwitcherTableCell"];
+        }
     
-    cell.delegate = self;
-    cell.switchConfig = [self.smartGardenConfig switchForIndexPath:indexPath];
-    [cell initialize];
-    
-    return cell;
+        cell.delegate = self;
+        cell.switchConfig = [self.smartGardenConfig switchForIndexPath:indexPath];
+        [cell initialize];
+        return cell;
+    }
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 2;
+    return 3;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
@@ -557,7 +599,20 @@
 {
     SwitcherTableCell *cell = (SwitcherTableCell *)[tableView cellForRowAtIndexPath:indexPath];
     [cell setSelected:NO animated:YES];
-    [self performSegueWithIdentifier:indexPath.section == 1 ? @"ManualSwitchSetup" :@"AutomaticSwitchSetup" sender:cell];
+    
+    NSString *identifier = nil;
+    switch (indexPath.section)
+    {
+        case 0:
+            identifier = @"Startzeiten";
+            break;
+        case 1:
+            identifier = @"AutomaticSwitchSetup";
+            break;
+        case 2:
+            identifier = @"ManualSwitchSetup";
+    }
+    [self performSegueWithIdentifier:identifier sender:cell];
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -628,30 +683,24 @@
     if (switchInformation != nil)
     {
         SwitcherTableCell *cell = [self cellForSwitchNumber:[[switchInformation objectAtIndex:0] intValue]];
-        if (cell != nil)
+        if (cell != nil && ![cell.switchConfig.modus isEqualToString:@"Vollzeit"])
         {
             if ([[switchInformation objectAtIndex:1] intValue] == 1)
             {
                 self.smartGardenConfig.action = @"Status";
                 [self sendMessage];
                 [cell startLaufzeit];
-                if ([cell.switchConfig.modus isEqualToString:@"Teilzeit"])
+                for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
                 {
-                    for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
-                    {
-                        [switchCell startLaufzeit];
-                    }
+                    [switchCell startLaufzeit];
                 }
             }
             else
             {
                 [cell stopLaufzeit];
-                if ([cell.switchConfig.modus isEqualToString:@"Teilzeit"])
+                for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
                 {
-                    for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
-                    {
-                        [switchCell stopLaufzeit];
-                    }
+                    [switchCell stopLaufzeit];
                 }
             }
         }

@@ -171,7 +171,7 @@
     {
         if (activeSwitchConfig == nil)
         {
-            if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Teilzeit"])
+            if ([switchConfig.section intValue] == 1 && [switchConfig.modus isEqualToString:@"Teilzeit"])
             {
                 switchForSwitchConfig = switchConfig;
                 break;
@@ -181,7 +181,7 @@
         {
             if (switchConfig.nummer > activeSwitchConfig.nummer)
             {
-                if (switchConfig.section == 0 && [switchConfig.modus isEqualToString:@"Teilzeit"])
+                if ([switchConfig.section intValue] == 1 && [switchConfig.modus isEqualToString:@"Teilzeit"])
                 {
                     switchForSwitchConfig = switchConfig;
                     break;
