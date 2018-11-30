@@ -56,6 +56,7 @@ int pickerComponentWidth[3] = {130,70,70};
     UIPickerView *startzeitPicker = [[UIPickerView alloc] init];
     startzeitPicker.delegate = self;
     startzeitPicker.dataSource = self;
+    
     [self.inputField setInputView:startzeitPicker];
     UIToolbar *startzeitPickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
     [startzeitPickerToolbar setTintColor:[UIColor grayColor]];
@@ -71,6 +72,7 @@ int pickerComponentWidth[3] = {130,70,70};
     [self.inputField resignFirstResponder];
     [self.smartGardenConfig.startzeiten addObject:self.pickerValue];
     self.pickerValue = [[Startzeit alloc] init];
+    
     self.deleteButton.enabled = true;
     [self.tableView reloadData];
 }

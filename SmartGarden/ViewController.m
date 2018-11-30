@@ -40,6 +40,8 @@
 @property (strong, nonatomic) NSTimer *timeoutTimer;
 @property (strong, nonatomic) UIViewController *segueViewController;
 @property NSStreamEvent streamEvent;
+@property NSString *startzeit_textlabel;
+@property NSString *startzeit_detaillabel;
 @property BOOL sending;
 
 - (IBAction)startButtonClicked:(id)sender;
@@ -124,23 +126,21 @@
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
         if ([self.smartGardenConfig.automatikAktiviert boolValue])
         {
-            cell.detailTextLabel.text = [NSString stringWithFormat:@"Verbleibende Zeit bis zum Start: %02lih %02lim %02lis",components.hour,components.minute,components.second];
-            self.countdownTextField.text = [NSString stringWithFormat:@"%02lih %02lim %02lis",components.hour,components.minute,components.second];
+            self.startzeit_detaillabel = [NSString stringWithFormat:@"Verbleibende Zeit bis zum Start: %02lih %02lim %02lis",components.hour,components.minute,components.second];
         }
         else
         {
-            cell.detailTextLabel.text = @"";
-            self.countdownTextField.text = @"";
+            self.startzeit_detaillabel = @"";
         }
         NSMutableArray *weekdays = [[NSMutableArray alloc] initWithObjects:@"Sonntag", @"Montag", @"Dienstag", @"Mittwoch", @"Donnerstag", @"Freitag", @"Samstag", nil];
         components = [calendar components:(NSCalendarUnitWeekday | NSCalendarUnitHour | NSCalendarUnitMinute) fromDate:startzeit];
-        cell.textLabel.text = [NSString stringWithFormat:@"Nächster Start am %@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
-        self.startzeitTextField.text = [NSString stringWithFormat:@"%@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
+        self.startzeit_textlabel = [NSString stringWithFormat:@"Nächster Start: %@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
+        [self.tableView reloadData];
     }
     else
     {
-        self.startzeitTextField.text = @"";
-        self.countdownTextField.text = @"";
+        self.startzeit_detaillabel = @"";
+        self.startzeit_textlabel = @"Keine Startzeit konfiguriert.";
     }
 }
 
@@ -404,6 +404,7 @@
                             }
                         }
                         [self.tableView.refreshControl endRefreshing];
+                        [self.tableView reloadData];
                         self.sending = false;
                     }
                 }
@@ -528,8 +529,8 @@
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"StartzeitTableCell"];
         }
-        cell.textLabel.text = @"Startzeit";
-        cell.detailTextLabel.text = @"Uhrzeit";
+        cell.textLabel.text = self.startzeit_textlabel;
+        cell.detailTextLabel.text = self.startzeit_detaillabel;
         return cell;
     }
     else
