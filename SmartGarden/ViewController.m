@@ -123,7 +123,6 @@
             }
         }
         NSDateComponents *components = [calendar components:(NSCalendarUnitHour |NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:servertime toDate:startzeit options:0];
-        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
         if ([self.smartGardenConfig.automatikAktiviert boolValue])
         {
             self.startzeit_detaillabel = [NSString stringWithFormat:@"Verbleibende Zeit bis zum Start: %02lih %02lim %02lis",components.hour,components.minute,components.second];
@@ -162,7 +161,7 @@
     self.doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
     self.doubleTap.numberOfTapsRequired = 2;
     self.doubleTap.numberOfTouchesRequired = 1;
-    [self.tableView addGestureRecognizer:self.doubleTap];
+    //[self.tableView addGestureRecognizer:self.doubleTap];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground) name:UIApplicationWillEnterForegroundNotification object:[UIApplication sharedApplication]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:[UIApplication sharedApplication]];
@@ -202,14 +201,14 @@
         self.smartGardenConfig.action = @"Uebertragen";
         [self sendMessage];
     }
-    if ([self.segueViewController isKindOfClass:[NachrichtenViewController class]])
+    else if ([self.segueViewController isKindOfClass:[NachrichtenViewController class]])
     {
         self.smartGardenConfig.badge = [NSNumber numberWithInt:0];
         [self.nachrichtenButton setTitle:[NSString stringWithFormat:@"Nachrichten (%i)",[self.smartGardenConfig.badge intValue]]];
         self.smartGardenConfig.action = @"Uebertragen";
         [self sendMessage];
     }
-    if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
+    else if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
     {
         AutomaticSwitchSetupController *controller = (AutomaticSwitchSetupController*)self.segueViewController;
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
@@ -219,13 +218,13 @@
         [self sendMessage];
         [self.tableView reloadData];
     }
-    if ([self.segueViewController isKindOfClass:[ManualSwitchSetupController class]])
+    else if ([self.segueViewController isKindOfClass:[ManualSwitchSetupController class]])
     {
         ManualSwitchSetupController *controller = (ManualSwitchSetupController*)self.segueViewController;
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
         self.smartGardenConfig.action = @"Schalte";
         self.smartGardenConfig.control = controller.switchConfig.nummer;
-        self.smartGardenConfig.state = controller.switchConfig.aktiv;
+        self.smartGardenConfig.state = controller.switchState;
         [self.smartGardenConfig.switches setObject:controller.switchConfig forKey:controller.switchConfig.nummer];
         [self.smartGardenConfig updateGesamtlaufzeit];
         [self sendMessage];
@@ -292,12 +291,12 @@
 {
     if (enable)
     {
-        [self enableSection:0 enable:YES];
+        [self enableSection:1 enable:YES];
         self.doubleTap.enabled = YES;
     }
     else
     {
-        [self enableSection:0 enable:NO];
+        [self enableSection:1 enable:NO];
         self.doubleTap.enabled = NO;
     }
 }
@@ -342,9 +341,8 @@
                             [self.smartGardenConfig initWithJSON:jsonObject];
                             if ([self.smartGardenConfig.action isEqualToString:@"Schalte"])
                             {
-                                NSArray *switchInformation = [receiveString componentsSeparatedByString:@" "];
-                                SwitcherTableCell *cell = [self cellForSwitchNumber:[[switchInformation objectAtIndex:1] intValue]];
-                                if ([[switchInformation objectAtIndex:2] intValue] == 1)
+                                SwitcherTableCell *cell = [self cellForSwitchNumber:[self.smartGardenConfig.control intValue]];
+                                if ([self.smartGardenConfig.state boolValue])
                                 {
                                     [cell startLaufzeit];
                                 }
@@ -578,12 +576,11 @@
         [self sendMessage];
     }
     [self.tableView setEditing:!self.tableView.editing animated:YES];
-    
 }
 
 - (BOOL) tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return !((UISwitch *)[tableView cellForRowAtIndexPath:indexPath].accessoryView).on;
+    return indexPath.section == 0 ? NO : YES;
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -598,8 +595,9 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    /*
     SwitcherTableCell *cell = (SwitcherTableCell *)[tableView cellForRowAtIndexPath:indexPath];
-    [cell setSelected:NO animated:YES];
+    //[cell setSelected:NO animated:YES];
     
     NSString *identifier = nil;
     switch (indexPath.section)
@@ -614,6 +612,8 @@
             identifier = @"ManualSwitchSetup";
     }
     [self performSegueWithIdentifier:identifier sender:cell];
+     */
+    NSLog(@"Tap");
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -691,17 +691,23 @@
                 self.smartGardenConfig.action = @"Status";
                 [self sendMessage];
                 [cell startLaufzeit];
-                for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
+                if ([cell.switchConfig.section intValue] == 1)
                 {
-                    [switchCell startLaufzeit];
+                    for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
+                    {
+                        [switchCell startLaufzeit];
+                    }
                 }
             }
             else
             {
                 [cell stopLaufzeit];
-                for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
+                if ([cell.switchConfig.section intValue] == 1)
                 {
-                    [switchCell stopLaufzeit];
+                    for (SwitcherTableCell *switchCell in [self cellForSwitchModus:@"Vollzeit"])
+                    {
+                        [switchCell stopLaufzeit];
+                    }
                 }
             }
         }

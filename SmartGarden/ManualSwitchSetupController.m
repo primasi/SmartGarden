@@ -191,7 +191,7 @@
 
 - (IBAction)stateChanged:(id)sender
 {
-    self.switchConfig.aktiv = [NSNumber numberWithBool:self.aktivierungSwitch.on];
+    self.switchState = [NSNumber numberWithBool:self.aktivierungSwitch.on];
 }
 
 @end

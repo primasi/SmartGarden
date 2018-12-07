@@ -30,18 +30,28 @@ int pickerComponentWidth[3] = {130,70,70};
     [super viewDidLoad];
     
     self.pickerData = [[NSMutableArray alloc] init];
-    NSMutableArray *pickerWeekdays = [[NSMutableArray alloc] initWithObjects:@"Sonntag", @"Montag", @"Dienstag", @"Mittwoch", @"Donnerstag", @"Freitag", @"Samstag", nil];
+    NSMutableArray *pickerWeekdays = [[NSMutableArray alloc] init];
+    for (int z = 0;z < 20;z++)
+    {
+        [pickerWeekdays addObjectsFromArray:[[NSMutableArray alloc] initWithObjects:@"Sonntag", @"Montag", @"Dienstag", @"Mittwoch", @"Donnerstag", @"Freitag", @"Samstag", nil]];
+    }
     [self.pickerData insertObject:pickerWeekdays atIndex:0];
     NSMutableArray *pickerHours = [[NSMutableArray alloc] init];
-    for (int hours = 0;hours < 24;hours++)
+    for (int z = 0;z < 20;z++)
     {
-        [pickerHours addObject:[NSString stringWithFormat:@"%02i",hours]];
+        for (int hours = 0;hours < 24;hours++)
+        {
+            [pickerHours addObject:[NSString stringWithFormat:@"%02i",hours]];
+        }
     }
     [self.pickerData insertObject:pickerHours atIndex:1];
     NSMutableArray *pickerMinutes = [[NSMutableArray alloc] init];
-    for (int minutes = 0;minutes < 60;minutes++)
+    for (int z = 0;z < 20;z++)
     {
-        [pickerMinutes addObject:[NSString stringWithFormat:@"%02i",minutes]];
+        for (int minutes = 0;minutes < 60;minutes++)
+        {
+            [pickerMinutes addObject:[NSString stringWithFormat:@"%02i",minutes]];
+        }
     }
     [self.pickerData insertObject:pickerMinutes atIndex:2];
     
@@ -56,6 +66,9 @@ int pickerComponentWidth[3] = {130,70,70};
     UIPickerView *startzeitPicker = [[UIPickerView alloc] init];
     startzeitPicker.delegate = self;
     startzeitPicker.dataSource = self;
+    [startzeitPicker selectRow:70 inComponent:0 animated:NO];
+    [startzeitPicker selectRow:240 inComponent:1 animated:NO];
+    [startzeitPicker selectRow:600 inComponent:2 animated:NO];
     
     [self.inputField setInputView:startzeitPicker];
     UIToolbar *startzeitPickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
@@ -70,8 +83,12 @@ int pickerComponentWidth[3] = {130,70,70};
 - (void)addPickerItem
 {
     [self.inputField resignFirstResponder];
-    [self.smartGardenConfig.startzeiten addObject:self.pickerValue];
-    self.pickerValue = [[Startzeit alloc] init];
+    Startzeit *startzeit = [[Startzeit alloc] init];
+    startzeit.wochentag = [NSNumber numberWithInt:[self.pickerValue.wochentag intValue] % 7];
+    startzeit.stunde = [NSNumber numberWithInt:[self.pickerValue.stunde intValue] % 24];
+    startzeit.minute = [NSNumber numberWithInt:[self.pickerValue.minute intValue] % 60];
+    [self.smartGardenConfig.startzeiten addObject:startzeit];
+    //self.pickerValue = [[Startzeit alloc] init];
     
     self.deleteButton.enabled = true;
     [self.tableView reloadData];

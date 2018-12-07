@@ -12,6 +12,7 @@
 @interface ManualSwitchSetupController : UITableViewController
 
 @property (strong, nonatomic) SwitchConfig *switchConfig;
+@property (strong, nonatomic) NSNumber *switchState;
 
 @end
 
