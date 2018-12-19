@@ -12,24 +12,24 @@
 #import "SwitcherTableCell.h"
 #import "NSArray_Sorting.h"
 #import "RNBlurModalView.h"
+#import "Reachability.h"
 #import "NachrichtenViewController.h"
 #import "StartzeitenViewController.h"
 #import "AutomaticSwitchSetupController.h"
 #import "ManualSwitchSetupController.h"
+#import <arpa/inet.h>
 
 #define BASE_URL @"172.20.10.14"
 //#define BASE_URL @"192.168.2.17"
 //#define BASE_URL @"192.168.0.30"
 
-@interface ViewController () <UITableViewDataSource, UITableViewDelegate, SwitcherTableCellDelegate>
+@interface ViewController () <UITableViewDataSource, UITableViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *headerView;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *startButton;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *nachrichtenButton;
-@property (weak, nonatomic) IBOutlet UITextField *startzeitTextField;
 @property (weak, nonatomic) IBOutlet UITextField *serverzeitTextField;
-@property (weak, nonatomic) IBOutlet UITextField *countdownTextField;
 @property (weak, nonatomic) IBOutlet MBCircularProgressBarView *progressView;
 @property (strong, nonatomic) NSInputStream *inputStream;
 @property (strong, nonatomic) NSOutputStream *outputStream;
@@ -43,6 +43,7 @@
 @property NSString *startzeit_textlabel;
 @property NSString *startzeit_detaillabel;
 @property BOOL sending;
+@property (nonatomic, strong) NSTimer *tapTimer;
 
 - (IBAction)startButtonClicked:(id)sender;
 
@@ -57,7 +58,7 @@
     NSDate *servertime = [formatter dateFromString:self.smartGardenConfig.serverzeit];
     self.smartGardenConfig.serverzeit = [formatter stringFromDate:[servertime dateByAddingTimeInterval:1.0]];
     self.serverzeitTextField.text = [self.smartGardenConfig.serverzeit stringByReplacingOccurrencesOfString:@" " withString:@" - "];
-    
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
     NSCalendar *calendar = [NSCalendar currentCalendar];
     
     if ([self.smartGardenConfig.startzeiten count] > 0)
@@ -125,21 +126,20 @@
         NSDateComponents *components = [calendar components:(NSCalendarUnitHour |NSCalendarUnitMinute | NSCalendarUnitSecond) fromDate:servertime toDate:startzeit options:0];
         if ([self.smartGardenConfig.automatikAktiviert boolValue])
         {
-            self.startzeit_detaillabel = [NSString stringWithFormat:@"Verbleibende Zeit bis zum Start: %02lih %02lim %02lis",components.hour,components.minute,components.second];
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"Verbleibende Zeit bis zum Start: %02lih %02lim %02lis",components.hour,components.minute,components.second];
         }
         else
         {
-            self.startzeit_detaillabel = @"";
+            cell.detailTextLabel.text = @"Automatik ist nicht gestartet.";
         }
         NSMutableArray *weekdays = [[NSMutableArray alloc] initWithObjects:@"Sonntag", @"Montag", @"Dienstag", @"Mittwoch", @"Donnerstag", @"Freitag", @"Samstag", nil];
         components = [calendar components:(NSCalendarUnitWeekday | NSCalendarUnitHour | NSCalendarUnitMinute) fromDate:startzeit];
-        self.startzeit_textlabel = [NSString stringWithFormat:@"Nächster Start: %@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
-        [self.tableView reloadData];
+        cell.textLabel.text = [NSString stringWithFormat:@"Nächster Start: %@ um %02li:%02li Uhr",weekdays[components.weekday - 1],components.hour,components.minute];
     }
     else
     {
-        self.startzeit_detaillabel = @"";
-        self.startzeit_textlabel = @"Keine Startzeit konfiguriert.";
+        cell.detailTextLabel.text = @"";
+        cell.textLabel.text = @"Keine Startzeit konfiguriert.";
     }
 }
 
@@ -156,12 +156,10 @@
     
     self.sectionsText = [NSMutableArray arrayWithObjects:@"Startzeit", @"Automatisch", @"Manuell", nil];
     
-    [self initNetworkCommunication];
-    
     self.doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
     self.doubleTap.numberOfTapsRequired = 2;
     self.doubleTap.numberOfTouchesRequired = 1;
-    //[self.tableView addGestureRecognizer:self.doubleTap];
+    [self.tableView addGestureRecognizer:self.doubleTap];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground) name:UIApplicationWillEnterForegroundNotification object:[UIApplication sharedApplication]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:[UIApplication sharedApplication]];
@@ -190,11 +188,20 @@
 
 - (void)willEnterForeground
 {
-    [self initNetworkCommunication];
+    if (![self initNetworkCommunication])
+    {
+        RNBlurModalView *modal = [[RNBlurModalView alloc] initWithTitle:@"Fehler!" message:@"Der Server ist zur Zeit nicht erreichbar!"];
+        [modal show];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    if (![self initNetworkCommunication])
+    {
+        RNBlurModalView *modal = [[RNBlurModalView alloc] initWithTitle:@"Fehler!" message:@"Der Server ist zur Zeit nicht erreichbar!"];
+        [modal show];
+    }
     if ([self.segueViewController isKindOfClass:[StartzeitenViewController class]])
     {
         self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
@@ -205,7 +212,7 @@
     {
         self.smartGardenConfig.badge = [NSNumber numberWithInt:0];
         [self.nachrichtenButton setTitle:[NSString stringWithFormat:@"Nachrichten (%i)",[self.smartGardenConfig.badge intValue]]];
-        self.smartGardenConfig.action = @"Uebertragen";
+        self.smartGardenConfig.action = @"Badge";
         [self sendMessage];
     }
     else if ([self.segueViewController isKindOfClass:[AutomaticSwitchSetupController class]])
@@ -231,12 +238,32 @@
         [self.tableView reloadData];
     }
 }
+/*
+- (BOOL) isServerOnline
+{
+    __block BOOL online = false;
+    
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    NSString *url = [NSString stringWithFormat: @"http://%@/phpinfo.php", BASE_URL];
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithURL:[NSURL URLWithString:url] completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)
+      {
+          online = error == nil;
+          dispatch_semaphore_signal(semaphore);
+      }] resume];
+    
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    
+    return online;
+}
+*/
 
-- (void)initNetworkCommunication
+- (BOOL) initNetworkCommunication
 {
     CFReadStreamRef readStream;
     CFWriteStreamRef writeStream;
-    
+            
     if ([self.outputStream streamStatus] == NSStreamStatusOpen && [self.inputStream streamStatus] != NSStreamStatusOpen)
     {
         [self.outputStream close];
@@ -261,20 +288,13 @@
         [self.inputStream open];
         [self.outputStream open];
     }
-}
-
-- (void)timeoutTimerCallback:(NSTimer *)timer
-{
-    [self.outputStream close];
-    [self.inputStream close];
-    self.streamEvent = NSStreamEventErrorOccurred;
-}
-
-- (BOOL)sendMessage
-{
-    [self initNetworkCommunication];
     
-    if ([self.outputStream streamStatus] == NSStreamStatusOpen && !self.sending)
+    return true;
+}
+
+- (BOOL) sendMessage
+{
+    if ([self initNetworkCommunication] && ([self.outputStream streamStatus] == NSStreamStatusOpen) && !self.sending)
     {
         NSData *data = [[NSData alloc] initWithData:[[self.smartGardenConfig classToJson] dataUsingEncoding:NSASCIIStringEncoding]];
         [self.outputStream write:[data bytes] maxLength:[data length]];
@@ -355,32 +375,15 @@
                             {
                                 [self.startButton setTitle:@"Stop"];
                                 [self enableConfigure:NO];
-                                /*
-                                SwitchConfig *switchConfig = [self.smartGardenConfig nextActiveSwitchConfig:nil];
-                                if (switchConfig != nil)
-                                {
-                                    SwitcherTableCell *cell = [self cellForSwitchNumber:[switchConfig.nummer intValue]];
-                                    [cell startLaufzeit];
-                                }
-                                */
                             }
                             if ([self.smartGardenConfig.action isEqualToString:@"Stop"])
                             {
                                 [self.startButton setTitle:@"Start"];
                                 [self enableConfigure:YES];
-                                /*
-                                SwitchConfig *switchConfig = [self.smartGardenConfig nextActiveSwitchConfig:nil];
-                                if (switchConfig != nil)
-                                {
-                                    SwitcherTableCell *cell = [self cellForSwitchNumber:[switchConfig.nummer intValue]];
-                                    [cell stopLaufzeit];
-                                }
-                                */
                             }
                             if ([self.smartGardenConfig.action isEqualToString:@"Status"])
                             {
                                 [self.smartGardenConfig initWithJSON:jsonObject];
-                                [self.tableView reloadData];
                                 
                                 if (self.serverzeitTimer != nil)
                                 {
@@ -425,11 +428,13 @@
             
         case NSStreamEventHasSpaceAvailable:
             NSLog(@"Has Space available");
+            
             if (self.streamEvent == NSStreamEventOpenCompleted)
             {
                 self.smartGardenConfig.action = @"Status";
                 [self sendMessage];
             }
+            
             break;
             
         case NSStreamEventNone:
@@ -527,8 +532,6 @@
         {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"StartzeitTableCell"];
         }
-        cell.textLabel.text = self.startzeit_textlabel;
-        cell.detailTextLabel.text = self.startzeit_detaillabel;
         return cell;
     }
     else
@@ -539,9 +542,13 @@
             cell = [[SwitcherTableCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SwitcherTableCell"];
         }
     
-        cell.delegate = self;
         cell.switchConfig = [self.smartGardenConfig switchForIndexPath:indexPath];
+        if (![self.smartGardenConfig.automatikAktiviert boolValue])
+        {
+            cell.switchConfig.aktuellelaufzeit = [NSNumber numberWithInt:0];
+        }
         [cell initialize];
+        
         return cell;
     }
 }
@@ -558,7 +565,7 @@
 
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(nonnull NSIndexPath *)indexPath
 {
-    return 60;
+    return 55;
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
@@ -595,10 +602,9 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    /*
     SwitcherTableCell *cell = (SwitcherTableCell *)[tableView cellForRowAtIndexPath:indexPath];
-    //[cell setSelected:NO animated:YES];
-    
+    [cell setSelected:NO animated:YES];
+        
     NSString *identifier = nil;
     switch (indexPath.section)
     {
@@ -612,8 +618,6 @@
             identifier = @"ManualSwitchSetup";
     }
     [self performSegueWithIdentifier:identifier sender:cell];
-     */
-    NSLog(@"Tap");
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -642,40 +646,6 @@
     self.smartGardenConfig.action = self.startButton.title;
     self.smartGardenConfig.automatikAktiviert = [NSNumber numberWithBool:[self.smartGardenConfig.action isEqualToString:@"Start"]];
     [self sendMessage];
-}
-
-- (void)tableCellLaufzeitChanged:(nonnull SwitcherTableCell *)switcherTableCell
-{
-    [self.smartGardenConfig updateGesamtlaufzeit];
-    [self.tableView reloadData];
-    self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-    self.smartGardenConfig.action = @"Uebertragen";
-    [self sendMessage];
-}
-
-- (void)tableCellSwitchChanged:(nonnull SwitcherTableCell *)switcherTableCell
-{
-    if ([switcherTableCell.switchConfig.section intValue] == 1)
-    {
-        self.smartGardenConfig.action = @"Schalte";
-        self.smartGardenConfig.control = [NSNumber numberWithInteger:switcherTableCell.tag];
-        self.smartGardenConfig.state = switcherTableCell.switchConfig.aktiv;
-        [self sendMessage];
-    }
-    else
-    {
-        [self.smartGardenConfig updateGesamtlaufzeit];
-        [self.tableView reloadData];
-        self.smartGardenConfig.pushnotificationId = ((AppDelegate*)[[UIApplication sharedApplication] delegate]).token;
-        self.smartGardenConfig.action = @"Uebertragen";
-        [self sendMessage];
-    }
-}
-
-- (void)laufzeitTimerFinished:(nonnull SwitcherTableCell *)switcherTableCell
-{
-    SwitcherTableCell *cell = [self cellForSwitchNumber:[[self.smartGardenConfig nextActiveSwitchConfig:switcherTableCell.switchConfig].nummer intValue]];
-    [cell startLaufzeit];
 }
 
 - (void) incomingPushNotification:(NSNotification*)notification

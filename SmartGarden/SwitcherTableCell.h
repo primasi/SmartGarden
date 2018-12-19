@@ -10,26 +10,11 @@
 #import "MBCircularProgressBarView.h"
 #import "SwitchConfig.h"
 
-@class SwitcherTableCell;
-
-//NS_ASSUME_NONNULL_BEGIN
-
-@protocol SwitcherTableCellDelegate <NSObject>
-
--(void)tableCellLaufzeitChanged:(SwitcherTableCell *)switcherTableCell;
--(void)tableCellSwitchChanged:(SwitcherTableCell *)switcherTableCell;
--(void)laufzeitTimerFinished:(SwitcherTableCell *)switcherTableCell;
-
-@end
-
-@interface SwitcherTableCell : UITableViewCell <UITextViewDelegate>
+@interface SwitcherTableCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet MBCircularProgressBarView *circularProgressBar;
-@property (weak, nonatomic) IBOutlet UILabel *laufzeitLabel;
-@property (weak, nonatomic) IBOutlet UILabel *statusView;
 @property (strong, nonatomic) NSTimer *laufzeitTimer;
 @property (strong, nonatomic) SwitchConfig *switchConfig;
-@property (nonatomic, weak, nullable) id<SwitcherTableCellDelegate> delegate;
 
 - (void)initialize;
 - (void)startLaufzeit;
@@ -37,4 +22,3 @@
 
 @end
 
-//NS_ASSUME_NONNULL_END

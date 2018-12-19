@@ -15,14 +15,6 @@
 {
     [super awakeFromNib];
     
-    self.laufzeitLabel.layer.cornerRadius = 5.0f;
-    self.laufzeitLabel.layer.borderWidth = 1.0f;
-    self.laufzeitLabel.layer.borderColor = [[UIColor lightGrayColor] CGColor];
-    
-    self.statusView.layer.cornerRadius = 5.0f;
-    self.statusView.layer.borderWidth = 1.0f;
-    self.statusView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
-    
     self.circularProgressBar.value = 0.0f;
     self.circularProgressBar.maxValue = 100.00f;
 }
@@ -58,7 +50,6 @@
             self.circularProgressBar.value = 100.00f;
             NSLog(@"Stoppe Timer Schalter %@",self.switchConfig.nummer);
             [timer invalidate];
-            //timer = nil;
         }
     }];
 }
@@ -70,19 +61,9 @@
 
 -(void)initialize
 {
-    if ([self.switchConfig.section intValue] == 2)
-    {
-        self.statusView.text = ([self.switchConfig.aktiv boolValue] ? @"An" : @"Aus");
-    }
-    else
-    {
-        self.statusView.text = self.switchConfig.modus;
-    }
-     
     self.textLabel.text = self.switchConfig.name;
-    self.tag = [self.switchConfig.nummer intValue];
-    
-    self.laufzeitLabel.text = [NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60];
+    self.detailTextLabel.text = [NSString stringWithFormat:@"Laufzeit %02i:%02i, Modus: %@", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60,[self.switchConfig.section intValue] == 2 ? ([self.switchConfig.aktiv boolValue] ? @"An" : @"Aus") : self.switchConfig.modus];
+    //self.laufzeitLabel.text = [NSString stringWithFormat:@"%02i:%02i", [self.switchConfig.gesamtlaufzeit intValue] / (60 * 60),([self.switchConfig.gesamtlaufzeit intValue] % (60 * 60)) / 60];
     
     if ([self.switchConfig.gesamtlaufzeit floatValue] > 0.0f)
     {

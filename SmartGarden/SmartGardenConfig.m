@@ -111,14 +111,14 @@
 - (void)updateGesamtlaufzeit
 {
     int laufzeit = 0;
-    for (SwitchConfig *switchConfig in [self switchesForSection:0])
+    for (SwitchConfig *switchConfig in [self switchesForSection:1])
     {
         if ([switchConfig.modus isEqualToString:@"Teilzeit"])
         {
             laufzeit += ([switchConfig.gesamtlaufzeit intValue]);
         }
     }
-    for (SwitchConfig *switchConfig in [self switchesForSection:0])
+    for (SwitchConfig *switchConfig in [self switchesForSection:1])
     {
         if ([switchConfig.modus isEqualToString:@"Vollzeit"])
         {
